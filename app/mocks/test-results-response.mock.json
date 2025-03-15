@@ -1,0 +1,47 @@
+{
+  "value": [
+    {
+      "automatedTestName": "LoginTest",
+      "automatedTestStorage": "AuthenticationTests.dll",
+      "durationInMs": 1523,
+      "id": 10123,
+      "isReRun": false,
+      "outcome": "Passed",
+      "owner": "jdoe@example.com",
+      "priority": 1,
+      "refId": 45678,
+      "runId": 78901,
+      "tags": ["smoke", "regression"],
+      "testCaseTitle": "User can log in with valid credentials"
+    },
+    {
+      "automatedTestName": "CheckoutTest",
+      "automatedTestStorage": "CheckoutTests.dll",
+      "durationInMs": 3125,
+      "id": 10124,
+      "isReRun": true,
+      "outcome": "Failed",
+      "owner": "asmith@example.com",
+      "priority": 2,
+      "refId": 45679,
+      "runId": 78901,
+      "tags": ["e2e", "critical"],
+      "testCaseTitle": "User can complete a checkout process"
+    },
+    {
+      "automatedTestName": "ProfileUpdateTest",
+      "automatedTestStorage": "UserProfileTests.dll",
+      "durationInMs": 987,
+      "id": 10125,
+      "isReRun": false,
+      "outcome": "Passed",
+      "owner": "mjohnson@example.com",
+      "priority": 3,
+      "refId": 45680,
+      "runId": 78902,
+      "tags": ["unit", "low"],
+      "testCaseTitle": "User can update profile information"
+    }
+  ],
+  "count": 37
+}

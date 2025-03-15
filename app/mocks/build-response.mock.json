@@ -1,0 +1,94 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://dev.azure.com/example-org/_apis/build/12345"
+    },
+    "web": {
+      "href": "https://dev.azure.com/example-org/build/12345"
+    }
+  },
+  "agentSpecification": {
+    "identifier": "windows-latest"
+  },
+  "appendCommitMessageToRunName": false,
+  "buildNumber": "20240315.1",
+  "buildNumberRevision": 2,
+  "controller": null,
+  "definition": {
+    "id": 25,
+    "name": "WebApp-CI",
+    "url": "https://dev.azure.com/example-org/_apis/build/definitions/25"
+  },
+  "deleted": false,
+  "deletedBy": null,
+  "deletedDate": null,
+  "deletedReason": null,
+  "demands": [],
+  "finishTime": "2025-03-15T12:45:30.000Z",
+  "id": 12345,
+  "lastChangedBy": {
+    "displayName": "Jane Doe",
+    "id": "abc123",
+    "uniqueName": "jdoe@example.com"
+  },
+  "lastChangedDate": "2025-03-15T12:50:00.000Z",
+  "logs": {
+    "id": 67890,
+    "url": "https://dev.azure.com/example-org/_apis/build/builds/12345/logs"
+  },
+  "orchestrationPlan": {
+    "planId": "abcd-efgh-ijkl-mnop"
+  },
+  "parameters": "{}",
+  "plans": [
+    {
+      "planId": "mnop-ijkl-efgh-abcd"
+    }
+  ],
+  "priority": "Normal",
+  "project": {
+    "id": "xyz789",
+    "name": "ExampleProject",
+    "url": "https://dev.azure.com/example-org/_apis/projects/xyz789"
+  },
+  "properties": {},
+  "quality": "good",
+  "queue": null,
+  "queueOptions": 0,
+  "queuePosition": 1,
+  "queueTime": "2025-03-15T12:30:00.000Z",
+  "reason": "Manual",
+  "repository": {
+    "id": "example-repo",
+    "type": "Git",
+    "name": "web-app",
+    "url": "https://dev.azure.com/example-org/_git/web-app",
+    "branch": "refs/heads/main",
+    "commit": "abcdef1234567890"
+  },
+  "requestedBy": {
+    "displayName": "John Smith",
+    "id": "user123",
+    "uniqueName": "jsmith@example.com"
+  },
+  "requestedFor": {
+    "displayName": "John Smith",
+    "id": "user123",
+    "uniqueName": "jsmith@example.com"
+  },
+  "result": "Succeeded",
+  "retainedByRelease": false,
+  "sourceBranch": "refs/heads/main",
+  "sourceVersion": "abcdef1234567890",
+  "startTime": "2025-03-15T12:35:00.000Z",
+  "status": "Completed",
+  "tags": ["release", "v1.2.3"],
+  "templateParameters": {},
+  "triggerInfo": {
+    "ci.triggeredBy": "refs/heads/main"
+  },
+  "triggeredByBuild": null,
+  "uri": "vstfs://Build/Build/12345",
+  "url": "https://dev.azure.com/example-org/_apis/build/builds/12345",
+  "validationResults": []
+}

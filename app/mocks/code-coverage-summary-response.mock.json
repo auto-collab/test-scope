@@ -1,0 +1,47 @@
+{
+  "coverageId": 98765,
+  "build": {
+    "id": 12345,
+    "name": "20240315.1",
+    "url": "https://dev.azure.com/example-org/_apis/build/builds/12345"
+  },
+  "coverageData": [
+    {
+      "configuration": {
+        "id": 1,
+        "flavor": "Release",
+        "platform": "x64"
+      },
+      "label": "Line Coverage",
+      "modules": [
+        {
+          "name": "AuthenticationModule",
+          "statistics": {
+            "linesCovered": 900,
+            "linesNotCovered": 100,
+            "linesPartiallyCovered": 20,
+            "totalLines": 1020,
+            "lineCoveragePercentage": 88.2
+          }
+        },
+        {
+          "name": "CheckoutModule",
+          "statistics": {
+            "linesCovered": 700,
+            "linesNotCovered": 150,
+            "linesPartiallyCovered": 50,
+            "totalLines": 900,
+            "lineCoveragePercentage": 77.7
+          }
+        }
+      ],
+      "aggregatedStatistics": {
+        "totalLinesCovered": 1600,
+        "totalLinesNotCovered": 250,
+        "totalLinesPartiallyCovered": 70,
+        "totalLines": 1920,
+        "overallLineCoverage": 83.3
+      }
+    }
+  ]
+}
