@@ -1,8 +1,8 @@
 'use-client';
-import { IBuildApi } from 'azure-devops-node-api/BuildApi';
 import { getAzureWebClient } from './azure-web-client-service';
 import { ITestApi } from 'azure-devops-node-api/TestApi';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
+import { getLatestBuildId } from './latest-build-service';
 
 export async function getCodeCoverageResults(
   pipeline: string,
@@ -10,13 +10,7 @@ export async function getCodeCoverageResults(
   try {
     const connection = getAzureWebClient();
 
-    const buildApi: IBuildApi = await connection.getBuildApi();
-    const buildResponse = await buildApi.getLatestBuild(
-      'hagerty',
-      pipeline,
-      'main', // Assumes Github Flow based deployment where the main branch is always deployable to production
-    );
-    const buildId = buildResponse.id ?? 0;
+    const buildId: number = await getLatestBuildId(pipeline);
 
     const testApi: ITestApi = await connection.getTestApi();
     const codeCoverage: BuildCoverage[] = await testApi.getBuildCodeCoverage(

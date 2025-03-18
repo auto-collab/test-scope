@@ -9,6 +9,7 @@ import {
 } from '@/models/interfaces/test-results-response';
 
 import { getAzureWebClient } from './azure-web-client-service';
+import { getLatestBuildId } from './latest-build-service';
 
 export async function getTestResults(
   pipeline: string,
@@ -16,13 +17,7 @@ export async function getTestResults(
   try {
     const connection = getAzureWebClient();
 
-    const buildApi: IBuildApi = await connection.getBuildApi();
-    const buildResponse = await buildApi.getLatestBuild(
-      'hagerty',
-      pipeline,
-      'main', // Assumes Github Flow based deployment where the main branch is always deployable to production
-    );
-    const buildId = buildResponse.id ?? 0;
+    const buildId: number = await getLatestBuildId(pipeline);
     const testResultsApi: ITestResultsApi =
       await connection.getTestResultsApi();
 
