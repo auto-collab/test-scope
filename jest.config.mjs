@@ -1,15 +1,30 @@
-import nextJest from 'next/jest.js'; // ✅ Explicit `.js` extension required
+import nextJest from 'next/jest.js';
 
 const createJestConfig = nextJest({ dir: './' });
 
 const customJestConfig = {
   preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testEnvironment: 'jest-environment-jsdom',
+
+  // ✅ Define separate environments for frontend & backend tests
+  projects: [
+    {
+      displayName: 'backend',
+      testMatch: ['**/app/api/**/*.test.ts'], // ✅ Only runs tests in `app/api/`
+      testEnvironment: 'node',
+    },
+    {
+      displayName: 'frontend',
+      testMatch: ['**/app/**/*.test.tsx'], // ✅ Only runs tests in `app/` (except API)
+      testEnvironment: 'jest-environment-jsdom',
+    },
+  ],
+
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
+
   collectCoverage: true,
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
