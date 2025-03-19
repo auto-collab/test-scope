@@ -1,13 +1,14 @@
-const nextJest = require('next/jest');
+import nextJest from 'next/jest.js'; // ✅ Explicit `.js` extension required
 
 const createJestConfig = nextJest({ dir: './' });
 
 const customJestConfig = {
+  preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1', // Alias for imports
-    '\\.(css|scss|sass)$': 'identity-obj-proxy', // Mock CSS imports
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
   collectCoverage: true,
   collectCoverageFrom: [
@@ -19,4 +20,5 @@ const customJestConfig = {
   coverageReporters: ['lcov', 'text-summary'],
 };
 
-module.exports = createJestConfig(customJestConfig);
+// ✅ Export as an ES module
+export default createJestConfig(customJestConfig);

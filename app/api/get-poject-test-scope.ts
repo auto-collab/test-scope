@@ -1,30 +1,58 @@
 import { getTestResults } from './azure/service/test-results-service';
 import { getCodeCoverageResults } from './azure/service/code-coverage-service';
 import { GroupedTestResults } from '@/models/interfaces/test-results-response';
+import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
 
-export async function getTestScope(applicationName: string) {
-  // Get all associated pipelines for application
-  let pipelines = [];
-  pipelines = getAssociatedPipelines(applicationName);
+export async function getTestScope(
+  applicationName: string,
+): Promise<Record<string, PipelineTestCoverage>> {
+  const pipelines = getAssociatedPipelines(applicationName);
 
-  const testResultsPromises = pipelines.map((pipeline) =>
-    getTestResults(pipeline),
+  const [testResultsArray, codeCoverageArray] = await Promise.all([
+    fetchTestResultsForPipelines(pipelines),
+    fetchCodeCoverageResultsForPipelines(pipelines),
+  ]);
+
+  return pipelines.reduce(
+    (results, pipeline) => {
+      results[pipeline] = {
+        testResults:
+          testResultsArray.find((r) => r.pipeline === pipeline)?.testResults ||
+          null,
+        codeCoverage:
+          codeCoverageArray.find((c) => c.pipeline === pipeline)
+            ?.codeCoverage || null,
+      };
+      return results;
+    },
+    {} as Record<string, PipelineTestCoverage>,
   );
-  const codeCoverageResultsPromises = pipelines.map((pipeline) =>
-    getCodeCoverageResults(pipeline),
+}
+
+async function fetchTestResultsForPipelines(pipelines: string[]) {
+  return Promise.all(
+    pipelines.map(async (pipeline) => ({
+      pipeline,
+      testResults: await getTestResults(pipeline),
+    })),
   );
+}
 
-  const testResults = await Promise.all(testResultsPromises);
-  const codeCoverageResults = await Promise.all(codeCoverageResultsPromises);
-
-  //Prevents errors caused by undefined or null values
-  // If an API call fails and returns undefined, .filter(Boolean) removes it.
-
-  return {
-    testResults: testResults.filter(Boolean) as GroupedTestResults[],
-  };
+async function fetchCodeCoverageResultsForPipelines(pipelines: string[]) {
+  return Promise.all(
+    pipelines.map(async (pipeline) => ({
+      pipeline,
+      codeCoverage: await getCodeCoverageResults(pipeline),
+    })),
+  );
 }
 
 function getAssociatedPipelines(applicationName: string) {
   return ['pipeline1', 'pipeline2'];
+}
+
+// Interface for expected structure of pipeline test coverage results
+export interface PipelineTestCoverage {
+  testResults: GroupedTestResults | null;
+  codeCoverage: BuildCoverage[] | null;
 }
