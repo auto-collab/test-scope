@@ -16,7 +16,7 @@ export async function getLatestBuildId(pipeline: string): Promise<number> {
   } catch (error: unknown) {
     console.error('Error occurred in getLatestBuildId:', error);
     throw new Error(
-      'An unexpected error occurred: ${(error as Error).message}',
+      `An unexpected error occurred: ${(error as Error).message}`,
     );
   }
 }

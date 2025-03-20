@@ -3,35 +3,40 @@ import nextJest from 'next/jest.js';
 const createJestConfig = nextJest({ dir: './' });
 
 const customJestConfig = {
-  preset: 'ts-jest',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  preset: 'ts-jest', // ✅ Ensures Jest correctly processes TypeScript
 
-  // ✅ Define separate environments for frontend & backend tests
-  projects: [
-    {
-      displayName: 'backend',
-      testMatch: ['**/app/api/**/*.test.ts'], // ✅ Only runs tests in `app/api/`
-      testEnvironment: 'node',
-    },
-    {
-      displayName: 'frontend',
-      testMatch: ['**/app/**/*.test.tsx'], // ✅ Only runs tests in `app/` (except API)
-      testEnvironment: 'jest-environment-jsdom',
-    },
-  ],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest', // ✅ Ensures TypeScript is parsed properly
+  },
 
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
 
-  collectCoverage: true,
-  collectCoverageFrom: [
-    'src/**/*.{js,jsx,ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/pages/_app.tsx',
-    '!src/pages/_document.tsx',
+  projects: [
+    {
+      displayName: 'backend',
+      testMatch: ['**/app/api/**/*.test.ts'], // ✅ Runs only backend tests
+      testEnvironment: 'node',
+      transform: {
+        '^.+\\.(ts|tsx)$': 'ts-jest', // ✅ Ensures Jest correctly processes TypeScript for backend tests
+      },
+    },
+    {
+      displayName: 'frontend',
+      testMatch: ['**/app/**/*.test.tsx'], // ✅ Runs only frontend tests
+      testEnvironment: 'jest-environment-jsdom',
+      transform: {
+        '^.+\\.(ts|tsx)$': 'ts-jest', // ✅ Ensures Jest correctly processes TypeScript for frontend tests
+      },
+    },
   ],
+
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+
+  collectCoverage: true,
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
   coverageReporters: ['lcov', 'text-summary'],
 };
 

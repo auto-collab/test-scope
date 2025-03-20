@@ -9,7 +9,9 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:backend": "jest --selectProjects backend",
+    "test:frontend": "jest --selectProjects frontend"
   },
   "type": "module",
   "dependencies": {
@@ -30,7 +32,6 @@
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",
-    "babel-jest": "^29.7.0",
     "eslint": "^9.21.0",
     "eslint-config-next": "^15.2.1",
     "eslint-config-prettier": "^10.0.2",
