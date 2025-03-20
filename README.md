@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Test Scope - Next.js Project
 
-## Getting Started
+This is a **Next.js** project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). The project integrates **TypeScript**, **ESLint**, **Prettier**, **Jest**, and **TailwindCSS**, making it a structured and efficient development environment.
 
-First, run the development server:
+## 📌 Features
+
+- **Next.js 15** with **React 19**
+- **TypeScript** for type safety
+- **TailwindCSS** for styling
+- **Jest** for unit testing
+- **ESLint & Prettier** for code linting and formatting
+- **Azure DevOps API Integration** for fetching test results and code coverage
+
+## 🚀 Getting Started
+
+### 1️⃣ Install Dependencies
+
+```bash
+npm install
+```
+
+### 2️⃣ Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3️⃣ Run Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run test
+```
 
-## Learn More
+To watch tests continuously:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run test:watch
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For coverage reports:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run test:coverage
+```
 
-## Deploy on Vercel
+## ⚙️ Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Environment Variables:** Use `.env.local` for local development.
+- **Linting & Formatting:** ESLint and Prettier are pre-configured.
+- **TailwindCSS:** Custom theme settings can be modified in `tailwind.config.ts`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📂 Project Structure
+
+```plaintext
+/app                # Main Next.js application
+/components        # Reusable UI components
+/styles           # Global styles and Tailwind configurations
+/tests           # Unit tests
+/utils           # Helper functions
+```
+
+## 🏗 Deployment
+
+The easiest way to deploy this project is via **[Vercel](https://vercel.com/)**:
+
+```bash
+vercel
+```
+
+For manual deployment:
+
+```bash
+npm run build
+npm run start
+```
+
+## 📖 Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [TailwindCSS Docs](https://tailwindcss.com/docs)
+- [Jest Testing Guide](https://jestjs.io/docs/getting-started)
+
+---
