@@ -9,7 +9,7 @@ const customJestConfig = {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
       {
-        tsconfig: '<rootDir>/tsconfig.json', // ✅ Ensures Jest uses TypeScript's JSX settings
+        tsconfig: '<rootDir>/tsconfig.json', // Ensures Jest uses TypeScript's JSX settings
       },
     ],
   },
@@ -19,14 +19,14 @@ const customJestConfig = {
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
 
-  collectCoverage: true, // ✅ Global coverage enforcement
+  collectCoverage: true,
   coverageReporters: ['lcov', 'text-summary'],
   collectCoverageFrom: [
-    'app/**/*.{ts,tsx}', // ✅ Include all source files
-    '!app/**/*.test.{ts,tsx}', // ❌ Exclude test files
-    '!app/api/**/*.test.ts', // ❌ Exclude backend test files
-    '!app/pages/**/*', // ❌ Exclude Next.js pages
-    '!app/layout.tsx', // ❌ Exclude layout files
+    'app/**/*.{ts,tsx}',
+    '!app/**/*.test.{ts,tsx}',
+    '!app/api/**/*.test.ts',
+    '!app/pages/**/*',
+    '!app/layout.tsx',
   ],
   coverageThreshold: {
     global: {
@@ -54,7 +54,7 @@ const customJestConfig = {
         '^.+\\.(ts|tsx)$': [
           'ts-jest',
           {
-            tsconfig: '<rootDir>/tsconfig.json', // ✅ Ensures Jest correctly compiles JSX
+            tsconfig: '<rootDir>/tsconfig.json', // Ensures Jest correctly compiles JSX
           },
         ],
       },
@@ -64,5 +64,5 @@ const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };
 
-// ✅ Export as an ES module
+// Export as an ES module
 export default createJestConfig(customJestConfig);
