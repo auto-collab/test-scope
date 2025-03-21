@@ -1,18 +1,17 @@
 'use-client';
-import { getAzureWebClient } from './azure-web-client-service';
 import { ITestApi } from 'azure-devops-node-api/TestApi';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
-import { getLatestBuildId } from './latest-build-service';
+import { getLatestBuildId } from './get-latest-build-service';
+import { WebApi } from 'azure-devops-node-api';
 
 export async function getCodeCoverageResults(
   pipeline: string,
+  webApi: WebApi,
 ): Promise<BuildCoverage[] | undefined> {
   try {
-    const connection = getAzureWebClient();
+    const buildId: number = await getLatestBuildId(pipeline, webApi);
 
-    const buildId: number = await getLatestBuildId(pipeline);
-
-    const testApi: ITestApi = await connection.getTestApi();
+    const testApi: ITestApi = await webApi.getTestApi();
     const codeCoverage: BuildCoverage[] = await testApi.getBuildCodeCoverage(
       'hagerty',
       buildId,

@@ -1,5 +1,4 @@
 'use-client';
-import { IBuildApi } from 'azure-devops-node-api/BuildApi';
 import { ShallowTestCaseResult } from 'azure-devops-node-api/interfaces/TestInterfaces';
 import { ITestResultsApi } from 'azure-devops-node-api/TestResultsApi';
 
@@ -8,18 +7,16 @@ import {
   TestResultsResponse,
 } from '@/models/interfaces/test-results-response';
 
-import { getAzureWebClient } from './azure-web-client-service';
-import { getLatestBuildId } from './latest-build-service';
+import { getLatestBuildId } from './get-latest-build-service';
+import { WebApi } from 'azure-devops-node-api';
 
 export async function getTestResults(
   pipeline: string,
+  webApi: WebApi,
 ): Promise<GroupedTestResults | undefined> {
   try {
-    const connection = getAzureWebClient();
-
-    const buildId: number = await getLatestBuildId(pipeline);
-    const testResultsApi: ITestResultsApi =
-      await connection.getTestResultsApi();
+    const buildId: number = await getLatestBuildId(pipeline, webApi);
+    const testResultsApi: ITestResultsApi = await webApi.getTestResultsApi();
 
     const testRunsResponse = await testResultsApi.getTestResultsByBuild(
       'hagerty',

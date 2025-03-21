@@ -1,12 +1,14 @@
 'use-client';
 import { IBuildApi } from 'azure-devops-node-api/BuildApi';
 import { getAzureWebClient } from './azure-web-client-service';
+import { WebApi } from 'azure-devops-node-api';
 
-export async function getLatestBuildId(pipeline: string): Promise<number> {
+export async function getLatestBuildId(
+  pipeline: string,
+  webApi: WebApi,
+): Promise<number> {
   try {
-    const connection = getAzureWebClient();
-
-    const buildApi: IBuildApi = await connection.getBuildApi();
+    const buildApi: IBuildApi = await webApi.getBuildApi();
     const buildResponse = await buildApi.getLatestBuild(
       'hagerty',
       pipeline,

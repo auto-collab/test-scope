@@ -11,7 +11,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx", // ✅ Enables JSX transformation in TypeScript
+    "jsx": "react-jsx",
     "incremental": true,
     "types": ["jest", "node"],
     "plugins": [

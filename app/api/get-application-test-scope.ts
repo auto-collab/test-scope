@@ -1,11 +1,14 @@
-import { getTestResults } from './azure/service/test-results-service';
-import { getCodeCoverageResults } from './azure/service/code-coverage-service';
+import { getTestResults } from './get-test-results-service';
+import { getCodeCoverageResults } from './get-code-coverage-service';
 import { GroupedTestResults } from '@/models/interfaces/test-results-response';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
+import { getAzureWebClient } from './azure-web-client-service';
 
-export async function getTestScope(
+const webApi = getAzureWebClient();
+
+export async function getApplicationTestScope(
   applicationName: string,
-): Promise<Record<string, PipelineTestCoverage>> {
+): Promise<Record<string, ApplicationTestCoverage>> {
   const pipelines = getAssociatedPipelines(applicationName);
 
   const [testResultsArray, codeCoverageArray] = await Promise.all([
@@ -21,28 +24,28 @@ export async function getTestScope(
           null,
         codeCoverage:
           codeCoverageArray.find((c) => c.pipeline === pipeline)
-            ?.codeCoverage || null,
+            ?.codeCoverageResults || null,
       };
       return results;
     },
-    {} as Record<string, PipelineTestCoverage>,
-  );
-}
-
-async function fetchTestResultsForPipelines(pipelines: string[]) {
-  return Promise.all(
-    pipelines.map(async (pipeline) => ({
-      pipeline,
-      testResults: await getTestResults(pipeline),
-    })),
+    {} as Record<string, ApplicationTestCoverage>,
   );
 }
 
 async function fetchCodeCoverageResultsForPipelines(pipelines: string[]) {
-  return Promise.all(
+  return await Promise.all(
     pipelines.map(async (pipeline) => ({
       pipeline,
-      codeCoverage: await getCodeCoverageResults(pipeline),
+      codeCoverageResults: await getCodeCoverageResults(pipeline, webApi),
+    })),
+  );
+}
+
+async function fetchTestResultsForPipelines(pipelines: string[]) {
+  return await Promise.all(
+    pipelines.map(async (pipeline) => ({
+      pipeline,
+      testResults: await getTestResults(pipeline, webApi),
     })),
   );
 }
@@ -52,7 +55,7 @@ function getAssociatedPipelines(applicationName: string) {
 }
 
 // Interface for expected structure of pipeline test coverage results
-export interface PipelineTestCoverage {
+export interface ApplicationTestCoverage {
   testResults: GroupedTestResults | null;
   codeCoverage: BuildCoverage[] | null;
 }
