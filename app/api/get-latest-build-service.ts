@@ -1,6 +1,5 @@
 'use-client';
 import { IBuildApi } from 'azure-devops-node-api/BuildApi';
-import { getAzureWebClient } from './azure-web-client-service';
 import { WebApi } from 'azure-devops-node-api';
 
 export async function getLatestBuildId(
@@ -14,7 +13,7 @@ export async function getLatestBuildId(
       pipeline,
       'main', // Assumes Github Flow based deployment where the main branch is always deployable to production
     );
-    return buildResponse.id ?? 0;
+    return buildResponse?.id ?? 0;
   } catch (error: unknown) {
     console.error('Error occurred in getLatestBuildId:', error);
     throw new Error(

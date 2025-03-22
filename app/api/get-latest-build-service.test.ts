@@ -1,10 +1,5 @@
 import { getLatestBuildId } from './get-latest-build-service';
-import { getAzureWebClient } from './azure-web-client-service';
 import { WebApi } from 'azure-devops-node-api';
-
-jest.mock('./azure-web-client-service', () => ({
-  getAzureWebClient: jest.fn(),
-}));
 
 describe('getLatestBuildId', () => {
   let mockWebApi: Partial<WebApi>;
@@ -13,7 +8,6 @@ describe('getLatestBuildId', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // ✅ Correct structure for getBuildApi() and getLatestBuild()
     mockBuildApi = {
       getLatestBuild: jest.fn().mockResolvedValue({ id: 12345 }),
     };
@@ -21,23 +15,22 @@ describe('getLatestBuildId', () => {
     mockWebApi = {
       getBuildApi: jest.fn().mockResolvedValue(mockBuildApi),
     };
-
-    // ✅ Mock `getAzureWebClient` to return our mockWebApi
-    (getAzureWebClient as jest.Mock).mockReturnValue(mockWebApi);
   });
 
-  // Tests
   test('should return the latest build ID', async () => {
     const buildId = await getLatestBuildId('pipeline1', mockWebApi as WebApi);
 
     expect(buildId).toBe(12345);
-    expect(getAzureWebClient).toHaveBeenCalled();
+    expect(mockWebApi.getBuildApi).toHaveBeenCalled();
+    expect(mockBuildApi.getLatestBuild).toHaveBeenCalledWith(
+      'hagerty',
+      'pipeline1',
+      'main',
+    );
   });
 
   test('should return 0 if no build ID is found', async () => {
-    (mockWebApi.getBuildApi as jest.Mock).mockResolvedValue({
-      getLatestBuildId: jest.fn().mockResolvedValue(0),
-    });
+    (mockBuildApi.getLatestBuild as jest.Mock).mockResolvedValue(undefined);
 
     const buildId = await getLatestBuildId('pipeline1', mockWebApi as WebApi);
 
