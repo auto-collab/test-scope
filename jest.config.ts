@@ -1,10 +1,12 @@
 import { Config } from 'jest';
 
 const config: Config = {
-  testEnvironment: 'jsdom', // ✅ Single environment (Supports both frontend & backend)
+  testEnvironment: 'jsdom', // ✅ Works for frontend & backend
+
+  verbose: true, // ✅ Enables detailed test output
 
   transform: {
-    '^.+\\.tsx?$': 'babel-jest', // ✅ Uses Babel instead of ts-jest
+    '^.+\\.tsx?$': 'babel-jest',
   },
 
   moduleNameMapper: {
@@ -14,7 +16,7 @@ const config: Config = {
 
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['text-summary'],
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov'], // ✅ Enables detailed text output
   collectCoverageFrom: [
     'app/**/*.{ts,tsx}',
     '!app/**/*.test.{ts,tsx}',
@@ -27,8 +29,7 @@ const config: Config = {
     '!babel.config.js',
   ],
 
-  verbose: true, // ✅ Enables detailed test output
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'], // ✅ Runs before tests
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 };
 
 export default config;
