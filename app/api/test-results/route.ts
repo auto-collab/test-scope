@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import { getTestResults } from '@/app/api/get-test-results-service';
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const pipelineName = searchParams.get('pipelineName');

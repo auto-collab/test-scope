@@ -1,9 +1,9 @@
 import { Config } from 'jest';
 
 const config: Config = {
-  testEnvironment: 'jsdom', // ✅ Works for frontend & backend
+  testEnvironment: 'jsdom', // Works for testing frontend & backend environments
 
-  verbose: true, // ✅ Enables detailed test output
+  verbose: true, // Enables detailed test output
 
   transform: {
     '^.+\\.tsx?$': 'babel-jest',
@@ -16,7 +16,7 @@ const config: Config = {
 
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary', 'html', 'lcov'], // ✅ Enables detailed text output
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov'], // Enables detailed text output
   collectCoverageFrom: [
     'app/**/*.{ts,tsx}',
     '!app/**/*.test.{ts,tsx}',
