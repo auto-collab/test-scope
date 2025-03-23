@@ -50,7 +50,7 @@ async function fetchTestResultsForPipelines(pipelines: string[]) {
   );
 }
 
-function getAssociatedPipelines(applicationName: string) {
+function getAssociatedPipelines(_applicationName: string) {
   return ['pipeline1', 'pipeline2'];
 }
 

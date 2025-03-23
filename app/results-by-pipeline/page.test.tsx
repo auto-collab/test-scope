@@ -1,6 +1,3 @@
-import { render, screen } from '@testing-library/react';
-import ResultsByPipelinePage from '../page';
-
 describe('ResultsByPipelinePage', () => {
   test('renders the page heading', () => {
     // render(<ResultsByPipelinePage />);

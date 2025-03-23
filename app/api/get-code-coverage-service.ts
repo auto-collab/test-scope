@@ -1,7 +1,7 @@
 'use-client';
 import { ITestApi } from 'azure-devops-node-api/TestApi';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
-import { getLatestBuildId } from './get-latest-build-service';
+import { getLatestBuildId } from './get-latest-build/get-latest-build-service';
 import { WebApi } from 'azure-devops-node-api';
 
 export async function getCodeCoverageResults(
@@ -32,4 +32,4 @@ export async function getCodeCoverageResults(
   }
 }
 
-export interface CodeCoverageResults {}
+export type CodeCoverageResults = object;

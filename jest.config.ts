@@ -1,13 +1,24 @@
 import { Config } from 'jest';
 
 const config: Config = {
-  testEnvironment: 'jsdom', // Works for testing frontend & backend environments
-
-  verbose: true, // Enables detailed test output
+  testEnvironment: 'jsdom',
+  verbose: true,
 
   transform: {
-    '^.+\\.tsx?$': 'babel-jest',
+    '^.+\\.tsx?$': [
+      'babel-jest',
+      {
+        presets: [
+          '@babel/preset-env',
+          '@babel/preset-react',
+          '@babel/preset-typescript',
+        ],
+      },
+    ],
   },
+
+  extensionsToTreatAsEsm: ['.ts', '.tsx'], // ✅ Fixes `import` issues
+  transformIgnorePatterns: ['<rootDir>/node_modules/'],
 
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
@@ -16,7 +27,7 @@ const config: Config = {
 
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary', 'html', 'lcov'], // Enables detailed text output
+  coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
   collectCoverageFrom: [
     'app/**/*.{ts,tsx}',
     '!app/**/*.test.{ts,tsx}',
