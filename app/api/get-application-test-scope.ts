@@ -1,5 +1,5 @@
 import { getTestResults } from './get-test-results/get-test-results-service';
-import { getCodeCoverageResults } from './get-code-coverage-service';
+import { getCodeCoverageResults } from './get-code-coverage/get-code-coverage-service';
 import { GroupedTestResults } from '@/models/interfaces/test-results-response';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
 import { getAzureWebClient } from './azure-web-client-service';

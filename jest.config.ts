@@ -1,46 +1,37 @@
-import { Config } from 'jest';
+import { Config } from "jest";
 
 const config: Config = {
-  testEnvironment: 'jsdom',
-  verbose: true,
+  preset: "ts-jest",
+  testEnvironment: "jsdom",
 
   transform: {
-    '^.+\\.tsx?$': [
-      'babel-jest',
-      {
-        presets: [
-          '@babel/preset-env',
-          '@babel/preset-react',
-          '@babel/preset-typescript',
-        ],
-      },
-    ],
+    "^.+\\.(ts|tsx)?$": "babel-jest",
   },
 
-  extensionsToTreatAsEsm: ['.ts', '.tsx'], // ✅ Fixes `import` issues
-  transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  extensionsToTreatAsEsm: [".ts", ".tsx"],
 
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-    '\\.(css|scss|sass)$': 'identity-obj-proxy',
+    "^@/(.*)$": "<rootDir>/$1",
+    "next/(.*)": "<rootDir>/node_modules/next/dist/$1", // ✅ Fixes `Cannot find module 'next/server'`
+    "\\.(css|scss|sass)$": "identity-obj-proxy",
   },
 
-  collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
-  collectCoverageFrom: [
-    'app/**/*.{ts,tsx}',
-    '!app/**/*.test.{ts,tsx}',
-    '!app/pages/**/*',
-    '!app/layout.tsx',
-    '!**/*.d.ts',
-    '!**/node_modules/**',
-    '!**/dist/**',
-    '!jest.config.ts',
-    '!babel.config.js',
-  ],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  collectCoverage: true,
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "text-summary", "html", "lcov"],
+  collectCoverageFrom: [
+    "app/**/*.{ts,tsx}",
+    "!app/**/*.test.{ts,tsx}",
+    "!app/pages/**/*",
+    "!app/layout.tsx",
+    "!**/*.d.ts",
+    "!**/node_modules/**",
+    "!**/dist/**",
+    "!jest.config.ts",
+    "!babel.config.js",
+  ],
 };
 
 export default config;

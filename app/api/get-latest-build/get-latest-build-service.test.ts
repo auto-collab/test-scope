@@ -38,6 +38,8 @@ describe('getLatestBuildId', () => {
   });
 
   test('should throw an error when API call fails', async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {}); // Suppress expected error output in console
+    
     (mockWebApi.getBuildApi as jest.Mock).mockRejectedValue(
       new Error('API Failure'),
     );
