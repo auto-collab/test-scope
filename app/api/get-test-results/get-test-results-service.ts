@@ -7,7 +7,7 @@ import {
   TestResultsResponse,
 } from '@/models/interfaces/test-results-response';
 
-import { getLatestBuildId } from './get-latest-build/get-latest-build-service';
+import { getLatestBuildId } from '../get-latest-build/get-latest-build-service';
 import { WebApi } from 'azure-devops-node-api';
 
 export async function getTestResults(
@@ -54,12 +54,30 @@ export async function getTestResults(
   } catch (error: unknown) {
     console.error('Error occurred in getTestResults:', error);
     throw new Error(
-      'An unexpected error occurred: ${(error as Error).message}',
+      `An unexpected error occurred: ${(error as Error).message}`,
     );
   }
 }
 
-// Groups the tests according to their associated DLL.
+/**
+Groups the tests according to their associated DLL.
+
+   TestStorage1: [
+          {
+            testName: 'Test 1',
+            id: 1,
+            runId: 101,
+            refId: 1001,
+            outcome: 'Passed',
+            priority: 1,
+            automatedTestName: 'AutomatedTest1',
+            automatedTestStorage: 'TestStorage1',
+            owner: 'Owner1',
+            testCaseTitle: 'Test 1',
+            durationInMs: 120,
+          },
+        ],
+ */
 function groupByTestStorage(
   results: TestResultsResponse,
 ): Record<string, ShallowTestCaseResult[]> {
