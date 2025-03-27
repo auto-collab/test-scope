@@ -1,8 +1,8 @@
-import { getTestResults } from './get-test-results/get-test-results-service';
-import { getCodeCoverageResults } from './get-code-coverage/get-code-coverage-service';
-import { GroupedTestResults } from '@/models/interfaces/test-results-response';
+import { getTestResults } from '../get-test-results/get-test-results-service';
+import { getCodeCoverageResults } from '../get-code-coverage/get-code-coverage-service';
 import { BuildCoverage } from 'azure-devops-node-api/interfaces/TestInterfaces';
-import { getAzureWebClient } from './azure-web-client-service';
+import { getAzureWebClient } from '../azure-web-client-service';
+import { GroupedTestResults } from '../../../models/interfaces/test-results-response';
 
 const webApi = getAzureWebClient();
 

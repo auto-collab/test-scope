@@ -33,36 +33,51 @@ describe('getCodeCoverageResults', () => {
 
     mockTestApi.getBuildCodeCoverage.mockResolvedValue(mockCoverageResults);
 
-    const results = await getCodeCoverageResults('pipeline1', mockWebApi as WebApi);
+    const results = await getCodeCoverageResults(
+      'pipeline1',
+      mockWebApi as WebApi,
+    );
 
     expect(results).toEqual(mockCoverageResults);
     expect(getLatestBuildId).toHaveBeenCalledWith('pipeline1', mockWebApi);
-    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith('hagerty', 12345, 2);
+    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith(
+      'hagerty',
+      12345,
+      2,
+    );
   });
 
   it('should throw an error when no code coverage is found', async () => {
-    jest.spyOn(console, "error").mockImplementation(() => {}); // Suppress expected error output in console
-   
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress expected error output in console
+
     mockTestApi.getBuildCodeCoverage.mockResolvedValue(undefined);
 
-    await expect(getCodeCoverageResults('pipeline1', mockWebApi as WebApi)).rejects.toThrow(
-      'No test results found'
-    );
+    await expect(
+      getCodeCoverageResults('pipeline1', mockWebApi as WebApi),
+    ).rejects.toThrow('No test results found');
 
     expect(getLatestBuildId).toHaveBeenCalledWith('pipeline1', mockWebApi);
-    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith('hagerty', 12345, 2);
+    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith(
+      'hagerty',
+      12345,
+      2,
+    );
   });
 
   it('should handle API errors gracefully', async () => {
-    jest.spyOn(console, "error").mockImplementation(() => {}); // Suppress expected error output in console
+    jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress expected error output in console
 
     mockTestApi.getBuildCodeCoverage.mockRejectedValue(new Error('API error'));
 
-    await expect(getCodeCoverageResults('pipeline1', mockWebApi as WebApi)).rejects.toThrow(
-      'An unexpected error occurred: API error'
-    );
+    await expect(
+      getCodeCoverageResults('pipeline1', mockWebApi as WebApi),
+    ).rejects.toThrow('An unexpected error occurred: API error');
 
     expect(getLatestBuildId).toHaveBeenCalledWith('pipeline1', mockWebApi);
-    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith('hagerty', 12345, 2);
+    expect(mockTestApi.getBuildCodeCoverage).toHaveBeenCalledWith(
+      'hagerty',
+      12345,
+      2,
+    );
   });
 });

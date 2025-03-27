@@ -1,14 +1,12 @@
 'use-client';
 import { ShallowTestCaseResult } from 'azure-devops-node-api/interfaces/TestInterfaces';
 import { ITestResultsApi } from 'azure-devops-node-api/TestResultsApi';
-
+import { getLatestBuildId } from '../get-latest-build/get-latest-build-service';
+import { WebApi } from 'azure-devops-node-api';
 import {
   GroupedTestResults,
   TestResultsResponse,
-} from '@/models/interfaces/test-results-response';
-
-import { getLatestBuildId } from '../get-latest-build/get-latest-build-service';
-import { WebApi } from 'azure-devops-node-api';
+} from '../../../models/interfaces/test-results-response';
 
 export async function getTestResults(
   pipeline: string,
