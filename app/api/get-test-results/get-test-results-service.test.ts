@@ -224,8 +224,6 @@ describe('getTestResults', () => {
     expect(results?.testGroups['']).toEqual(mockTestRuns);
   });
 
-
-
   it('should throw an error when no test results are found', async () => {
     mockTestResultsApi.getTestResultsByBuild.mockResolvedValue(undefined);
 
@@ -255,5 +253,4 @@ describe('getTestResults', () => {
       12345,
     );
   });
-
 });

@@ -1,10 +1,26 @@
 {
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "module": "CommonJS",  // ✅ Ensures Jest doesn't try to run ESM
+    "jsx": "preserve",
+    "module": "CommonJS", // ✅ Ensures Jest doesn't try to run ESM
     "moduleResolution": "Node",
     "types": ["jest", "node", "next"],
-    "esModuleInterop": true,  // ✅ Fixes React import issues
-    "allowSyntheticDefaultImports": true  // ✅ Allows React default import
-  }
+    "esModuleInterop": true, // ✅ Fixes React import issues
+    "allowSyntheticDefaultImports": true, // ✅ Allows React default import
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }
