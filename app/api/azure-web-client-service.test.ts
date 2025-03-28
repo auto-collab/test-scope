@@ -1,74 +1,78 @@
-import { getAzureWebClient } from './azure-web-client-service';
 import * as azDev from 'azure-devops-node-api';
-import { IRequestHandler } from 'azure-devops-node-api/interfaces/common/VsoBaseInterfaces';
+import {
+  createAzureWebClient,
+  getAzureWebClient,
+  resetAzureWebClient,
+} from './azure-web-client-service';
 
-describe('getAzureWebClient', () => {
-  let mockWebApiInstance: Partial<azDev.WebApi>;
-  let mockAuthHandler: jest.Mocked<IRequestHandler>;
-  let originalEnv: NodeJS.ProcessEnv;
+jest.mock('azure-devops-node-api', () => {
+  return {
+    WebApi: jest.fn().mockImplementation(() => ({})),
+    getPersonalAccessTokenHandler: jest.fn(),
+  };
+});
+
+describe('Azure Web Client', () => {
+  const mockOrgUrl = 'https://dev.azure.com/testOrg';
+  const mockToken = 'test-pat-token';
+  let mockAuthHandler: jest.Mock;
+  let mockWebApiInstance: jest.Mocked<azDev.WebApi>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    originalEnv = process.env;
-    process.env = { ...originalEnv };
+    process.env.NEXT_PUBLIC_ORG = 'testOrg';
+    process.env.NEXT_PUBLIC_AZURE_BASE_URL = 'https://dev.azure.com/';
+    process.env.NEXT_PUBLIC_AZURE_PAT = mockToken;
 
-    mockAuthHandler = {
-      prepareRequest: jest.fn(),
-      canHandleAuthentication: jest.fn(),
-      handleAuthentication: jest.fn(),
-    } as jest.Mocked<IRequestHandler>;
+    mockAuthHandler = jest.fn();
+    mockWebApiInstance = {} as unknown as jest.Mocked<azDev.WebApi>;
 
-    mockWebApiInstance = {
-      getBuildApi: jest.fn(), // Mocking a real method like in other tests
-    };
-
-    jest
-      .spyOn(azDev, 'getPersonalAccessTokenHandler')
-      .mockReturnValue(mockAuthHandler);
-    jest
-      .spyOn(azDev, 'WebApi')
-      .mockImplementation(() => mockWebApiInstance as azDev.WebApi);
+    (azDev.getPersonalAccessTokenHandler as jest.Mock).mockReturnValue(
+      mockAuthHandler,
+    );
+    (azDev.WebApi as unknown as jest.Mock).mockImplementation(
+      () => mockWebApiInstance,
+    );
   });
 
   afterEach(() => {
-    process.env = originalEnv;
+    jest.clearAllMocks();
+    resetAzureWebClient(); // Reset singleton after each test
   });
 
-  it('should create a new WebApi instance if not already initialized', () => {
-    process.env.NEXT_PUBLIC_ORG = 'testOrg';
-    process.env.NEXT_PUBLIC_AZURE_BASE_URL = 'https://dev.azure.com/';
-    process.env.NEXT_PUBLIC_AZURE_PAT = 'testToken';
+  test('createAzureWebClient should create a new WebApi instance', () => {
+    const client = createAzureWebClient();
 
-    const client = getAzureWebClient();
+    expect(azDev.getPersonalAccessTokenHandler).toHaveBeenCalledWith(mockToken);
+    expect(azDev.WebApi).toHaveBeenCalledWith(mockOrgUrl, mockAuthHandler);
+    expect(client).toBe(mockWebApiInstance);
+  });
 
-    expect(azDev.getPersonalAccessTokenHandler).toHaveBeenCalledWith(
-      'testToken',
-    );
-    expect(azDev.WebApi).toHaveBeenCalledTimes(1);
+  test('createAzureWebClient should handle missing environment variables', () => {
+    delete process.env.NEXT_PUBLIC_ORG;
+    delete process.env.NEXT_PUBLIC_AZURE_BASE_URL;
+    delete process.env.NEXT_PUBLIC_AZURE_PAT;
+
+    const client = createAzureWebClient();
+
+    expect(azDev.getPersonalAccessTokenHandler).toHaveBeenCalledWith('');
+    expect(azDev.WebApi).toHaveBeenCalledWith('', expect.anything());
     expect(client).toBeDefined();
   });
 
-  it('should return the existing WebApi instance if already initialized', () => {
-    process.env.NEXT_PUBLIC_ORG = 'testOrg';
-    process.env.NEXT_PUBLIC_AZURE_BASE_URL = 'https://dev.azure.com/';
-    process.env.NEXT_PUBLIC_AZURE_PAT = 'testToken';
-
+  test('getAzureWebClient should return cached instance if exists', () => {
     const firstCall = getAzureWebClient();
     const secondCall = getAzureWebClient();
 
-    expect(firstCall).toBe(secondCall); // Must return the same instance
     expect(azDev.WebApi).toHaveBeenCalledTimes(1); // Ensures only one instance is created
+    expect(firstCall).toBe(secondCall);
   });
 
-  it('should handle missing environment variables gracefully', () => {
-    process.env.NEXT_PUBLIC_ORG = '';
-    process.env.NEXT_PUBLIC_AZURE_BASE_URL = '';
-    process.env.NEXT_PUBLIC_AZURE_PAT = '';
+  test('getAzureWebClient should create a new instance if not cached', () => {
+    resetAzureWebClient();
 
     const client = getAzureWebClient();
 
-    expect(azDev.getPersonalAccessTokenHandler).toHaveBeenCalledWith('');
-    expect(azDev.WebApi).toHaveBeenCalledTimes(1);
-    expect(client).toBeDefined();
+    expect(azDev.WebApi).toHaveBeenCalledTimes(1); // Ensures a new instance is created
+    expect(client).toBe(mockWebApiInstance);
   });
 });
