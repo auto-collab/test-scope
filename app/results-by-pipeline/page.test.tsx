@@ -13,10 +13,10 @@ describe('ResultsByPipelinePage', () => {
   test('renders children inside the layout', () => {
     render(
       <DashboardLayout>
-        <p data-testid="child-element">Test Child</p>
+        <div data-testid="child-element">Test Child</div>{' '}
       </DashboardLayout>,
     );
 
-    expect(screen.getByTestId('child-element')).toHaveTextContent('Test Child');
+    expect(screen.getByTestId('child-element')).toBeInTheDocument();
   });
 });

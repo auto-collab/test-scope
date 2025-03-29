@@ -1,37 +1,33 @@
-import { Config } from 'jest';
+import nextJest from 'next/jest';
 
-const config: Config = {
-  preset: 'ts-jest',
-  testEnvironment: 'jsdom',
+const createJestConfig = nextJest({
+  dir: './',
+});
 
-  transform: {
-    '^.+\\.(ts|tsx)?$': 'babel-jest',
-  },
-
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+const customJestConfig = {
+  testEnvironment: 'jsdom', // Simulates browser-like environment
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'], // Ensures setup before tests
 
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1',
-    'next/(.*)': '<rootDir>/node_modules/next/dist/$1', // ✅ Fixes `Cannot find module 'next/server'`
-    '\\.(css|scss|sass)$': 'identity-obj-proxy',
+    '^@/(.*)$': '<rootDir>/src/$1', // Resolves import aliases
   },
 
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  transform: {
+    '^.+\\.(ts|tsx)$': ['@swc/jest', {}],
+  },
 
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'text-summary', 'html', 'lcov'],
   collectCoverageFrom: [
-    'app/**/*.{ts,tsx}',
-    '!app/**/*.test.{ts,tsx}',
-    '!app/pages/**/*',
-    '!app/layout.tsx',
+    '**/*.{ts,tsx}',
     '!**/*.d.ts',
+    '!**/index.ts',
     '!**/node_modules/**',
-    '!**/dist/**',
-    '!jest.config.ts',
-    '!babel.config.js',
+    '!**/__tests__/**',
+    '!**/jest.setup.ts',
+    '!**/*.config.{ts,tsx}',
   ],
+  coverageReporters: ['json', 'text', 'lcov', 'clover'],
+  coverageDirectory: '<rootDir>/coverage',
 };
 
-export default config;
+export default createJestConfig(customJestConfig as any);
