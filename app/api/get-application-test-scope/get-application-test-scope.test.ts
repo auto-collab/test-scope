@@ -10,7 +10,7 @@ describe('getApplicationTestScope', () => {
     jest.clearAllMocks();
   });
 
-  it('should return test and coverage results for multiple pipelines', async () => {
+  test('should return test and coverage results for multiple pipelines', async () => {
     (getTestResults as jest.Mock).mockImplementation(async (pipeline) => {
       return { testGroups: { [pipeline]: [`test-${pipeline}`] } };
     });
@@ -21,7 +21,7 @@ describe('getApplicationTestScope', () => {
       },
     );
 
-    const results = await getApplicationTestScope('testApp');
+    const results = await getApplicationTestScope();
     expect(results).toEqual({
       pipeline1: {
         testResults: { testGroups: { pipeline1: ['test-pipeline1'] } },
@@ -34,18 +34,18 @@ describe('getApplicationTestScope', () => {
     });
   });
 
-  it('should handle missing test results', async () => {
+  test('should handle missing test results', async () => {
     (getTestResults as jest.Mock).mockResolvedValue(null);
     (getCodeCoverageResults as jest.Mock).mockResolvedValue(null);
 
-    const results = await getApplicationTestScope('testApp');
+    const results = await getApplicationTestScope();
     expect(results).toEqual({
       pipeline1: { testResults: null, codeCoverage: null },
       pipeline2: { testResults: null, codeCoverage: null },
     });
   });
 
-  it('should handle API errors gracefully', async () => {
+  test('should handle API errors gracefully', async () => {
     (getTestResults as jest.Mock).mockRejectedValue(
       new Error('Test API Error'),
     );
@@ -53,12 +53,10 @@ describe('getApplicationTestScope', () => {
       new Error('Coverage API Error'),
     );
 
-    await expect(getApplicationTestScope('testApp')).rejects.toThrow(
-      'Test API Error',
-    );
+    await expect(getApplicationTestScope()).rejects.toThrow('Test API Error');
   });
 
-  it('should ensure code coverage results are correctly mapped to pipelines', async () => {
+  test('should ensure code coverage results are correctly mapped to pipelines', async () => {
     (getTestResults as jest.Mock).mockResolvedValue({ testGroups: {} });
     (getCodeCoverageResults as jest.Mock).mockImplementation(
       async (pipeline) => {
@@ -66,7 +64,7 @@ describe('getApplicationTestScope', () => {
       },
     );
 
-    const results = await getApplicationTestScope('testApp');
+    const results = await getApplicationTestScope();
 
     expect(getCodeCoverageResults).toHaveBeenCalledTimes(2);
     expect(results).toEqual({

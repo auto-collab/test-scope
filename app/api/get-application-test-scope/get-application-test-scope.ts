@@ -6,10 +6,10 @@ import { GroupedTestResults } from '../../../models/interfaces/test-results-resp
 
 const webApi = getAzureWebClient();
 
-export async function getApplicationTestScope(
-  applicationName: string,
-): Promise<Record<string, ApplicationTestCoverage>> {
-  const pipelines = getAssociatedPipelines(applicationName);
+export async function getApplicationTestScope(): Promise<
+  Record<string, ApplicationTestCoverage>
+> {
+  const pipelines = getAssociatedPipelines();
 
   const [testResultsArray, codeCoverageArray] = await Promise.all([
     fetchTestResultsForPipelines(pipelines),
@@ -50,7 +50,7 @@ async function fetchTestResultsForPipelines(pipelines: string[]) {
   );
 }
 
-function getAssociatedPipelines(_applicationName: string) {
+function getAssociatedPipelines() {
   return ['pipeline1', 'pipeline2'];
 }
 

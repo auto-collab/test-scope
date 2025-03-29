@@ -22,7 +22,7 @@ describe('getCodeCoverageResults', () => {
     (getLatestBuildId as jest.Mock).mockResolvedValue(12345);
   });
 
-  it('should fetch code coverage results successfully', async () => {
+  test('should fetch code coverage results successfully', async () => {
     const mockCoverageResults = [
       {
         codeCoverageFileUrl: 'https://coverage-report.com/1',
@@ -47,7 +47,7 @@ describe('getCodeCoverageResults', () => {
     );
   });
 
-  it('should throw an error when no code coverage is found', async () => {
+  test('should throw an error when no code coverage is found', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress expected error output in console
 
     mockTestApi.getBuildCodeCoverage.mockResolvedValue(undefined);
@@ -64,7 +64,7 @@ describe('getCodeCoverageResults', () => {
     );
   });
 
-  it('should handle API errors gracefully', async () => {
+  test('should handle API errors gracefully', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {}); // Suppress expected error output in console
 
     mockTestApi.getBuildCodeCoverage.mockRejectedValue(new Error('API error'));

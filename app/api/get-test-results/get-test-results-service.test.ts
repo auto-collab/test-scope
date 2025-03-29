@@ -22,7 +22,7 @@ describe('getTestResults', () => {
     (getLatestBuildId as jest.Mock).mockResolvedValue(12345);
   });
 
-  it('should successfully fetch test results', async () => {
+  test('should successfully fetch test results', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -54,7 +54,7 @@ describe('getTestResults', () => {
     );
   });
 
-  it('should successfully fetch multiple test results from same automatedTestStorage', async () => {
+  test('should successfully fetch multiple test results from same automatedTestStorage', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -91,7 +91,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['TestStorage1']).toEqual(mockTestRuns);
   });
 
-  it('should successfully fetch multiple test results from different automatedTestStorage', async () => {
+  test('should successfully fetch multiple test results from different automatedTestStorage', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -129,7 +129,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['TestStorage2']).toEqual([mockTestRuns[1]]);
   });
 
-  it('should handle null automatedTestStorage value', async () => {
+  test('should handle null automatedTestStorage value', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -153,7 +153,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['']).toEqual(mockTestRuns);
   });
 
-  it('should handle undefined automatedTestStorage value', async () => {
+  test('should handle undefined automatedTestStorage value', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -177,7 +177,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['']).toEqual(mockTestRuns);
   });
 
-  it('should handle missing automatedTestStorage attribute', async () => {
+  test('should handle missing automatedTestStorage attribute', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -200,7 +200,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['']).toEqual(mockTestRuns);
   });
 
-  it('should handle empty automatedTestStorage value', async () => {
+  test('should handle empty automatedTestStorage value', async () => {
     const mockTestRuns = [
       {
         testName: 'Test 1',
@@ -224,7 +224,7 @@ describe('getTestResults', () => {
     expect(results?.testGroups['']).toEqual(mockTestRuns);
   });
 
-  it('should throw an error when no test results are found', async () => {
+  test('should throw an error when no test results are found', async () => {
     mockTestResultsApi.getTestResultsByBuild.mockResolvedValue(undefined);
 
     await expect(
@@ -238,7 +238,7 @@ describe('getTestResults', () => {
     );
   });
 
-  it('should handle API errors gracefully', async () => {
+  test('should handle API errors gracefully', async () => {
     mockTestResultsApi.getTestResultsByBuild.mockRejectedValue(
       new Error('API error'),
     );
