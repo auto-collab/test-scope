@@ -20,7 +20,6 @@ export function getAzureWebClient(): azDev.WebApi {
   return azureWebClient;
 }
 
-// ✅ Add this function to reset the singleton
 export function resetAzureWebClient() {
   azureWebClient = null;
 }
