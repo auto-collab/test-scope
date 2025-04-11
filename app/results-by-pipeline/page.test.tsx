@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import ResultsByPipelinePage from './page';
-import DashboardLayout from './layout';
+import DashboardLayout from '../layout';
 
 describe('ResultsByPipelinePage', () => {
   test('should render page heading', () => {

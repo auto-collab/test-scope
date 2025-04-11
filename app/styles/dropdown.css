@@ -1,0 +1,27 @@
+.dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: sans-serif;
+}
+
+.dropdown-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111;
+}
+
+.dropdown-select {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: white;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.dropdown-select:focus {
+  outline: none;
+  border-color: #2563eb; /* blue-600 */
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}

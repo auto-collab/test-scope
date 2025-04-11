@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 
 // import { getApplicationTestScope } from '@/backend/get-application-test-scope';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const app = searchParams.get('app') || 'MyApp';
+export async function GET() {
+  // const { searchParams } = new URL(request.url);
+  // const app = searchParams.get('app') || 'MyApp';
 
   // TEMP MOCK DATA
   const mockData = {

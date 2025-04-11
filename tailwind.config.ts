@@ -8,6 +8,9 @@ module.exports = {
         accent: '#14B8A6',
         dark: '#111827',
         light: '#F3F4F6',
+
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
       },
     },
   },
