@@ -24,12 +24,13 @@ export default function Dropdown({
           onChange={(e) => onChange(e.target.value)}
         >
           <option value="" disabled>
-            {options.map((option: string) => (
-              <option key={option} value={option}>
-                option
-              </option>
-            ))}
+            Select an option
           </option>
+          {options.map((option: string) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
         </select>
       </label>
     </div>

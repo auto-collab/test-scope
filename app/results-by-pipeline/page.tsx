@@ -1,24 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dropdown from '../components/Dropdown';
 
 export default function ResultsByPipelinePage() {
-  const [applications, setApplications] = useState<string[]>([]);
-  const [selectedApplication, setSelectedApplication] = useState<string>('');
-
-  useEffect(() => {
-    setApplications(['App1', 'App2', 'App3']);
-  }, []);
+  const [apps, setApps] = useState(['App1', 'App2']);
+  const [selectedApp, setSelectedApp] = useState('');
 
   return (
     <main className="p-6">
-      <h1 className="text-2xl font-bold">Results by Pipeline</h1>
+      <h1 className="text-2xl font-bold">Pipeline Results</h1>
       <Dropdown
-        label={''}
-        value={selectedApplication}
-        options={applications}
-        onChange={(value) => setSelectedApplication(value)}
+        label="App"
+        options={apps}
+        value={selectedApp}
+        onChange={(v) => setSelectedApp(v)}
       />
     </main>
   );
