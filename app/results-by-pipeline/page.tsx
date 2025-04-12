@@ -8,7 +8,7 @@ export default function ResultsByPipelinePage() {
   const [selectedApp, setSelectedApp] = useState('');
 
   return (
-    <main className="p-6">
+    <main className="p-6" key="results-page">
       <h1 className="text-2xl font-bold">Pipeline Results</h1>
       <Dropdown
         label="App"
