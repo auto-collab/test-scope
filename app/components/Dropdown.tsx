@@ -1,5 +1,4 @@
 import React from 'react';
-import '../styles/dropdown.css';
 
 type DropdownProps = {
   label: string;
@@ -15,24 +14,20 @@ export default function Dropdown({
   onChange,
 }: DropdownProps) {
   return (
-    <div className="dropdown">
-      <label className="dropdown-label">
-        {label}
-        <select
-          className="dropdown-select"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        >
-          <option value="" disabled>
-            Select an option
+    <div className="flex flex-col gap-5">
+      <label className="dropdown-label">{label}</label>
+      <select
+        className="dropdown-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="" disabled></option>
+        {options.map((option: string) => (
+          <option key={option} value={option}>
+            {option}
           </option>
-          {options.map((option: string) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </label>
+        ))}
+      </select>
     </div>
   );
 }
