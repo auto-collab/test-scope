@@ -14,7 +14,7 @@ export default function Dropdown({
   onChange,
 }: DropdownProps) {
   return (
-    <div className="m-4 p-4 bg-gray-100 rounded-lg w-1/3">
+    <div className="m-4 p-4 bg-gray-100 rounded-lg">
       <label className="text-md font-medium text-gray-700">{label}</label>
       <select
         className="block w-full rounded-md border border-gray-300 bg-white p-2 text-sm text-gray-900 shadow-lg"
