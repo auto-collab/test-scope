@@ -1,33 +1,64 @@
 import { NextResponse } from 'next/server';
 
-// import { getApplicationTestScope } from '@/backend/get-application-test-scope';
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const app = searchParams.get('app') || 'MyApp';
+  const app = searchParams.get('app') || 'DefaultApp';
 
-  // TEMP MOCK DATA
   const mockData = {
-    totalTests: Math.floor(Math.random() * 100) + 1,
+    totalTests: 42,
     lastPipelineOutcomes: {
       'Pipeline A': 'Passed',
       'Pipeline B': 'Failed',
     },
     codeCoverage: [
-      { module: 'Module A', coverage: Math.random() * 100 },
-      { module: 'Module B', coverage: Math.random() * 100 },
-      { module: 'Module C', coverage: Math.random() * 100 },
+      { module: 'Authentication', coverage: 85 },
+      { module: 'Payment', coverage: 78 },
+      { module: 'User Profile', coverage: 92 },
     ],
     testGroups: {
-      'Storage A': [
-        { testName: 'Test 1', duration: '500ms', outcome: 'Passed' },
-        { testName: 'Test 2', duration: '300ms', outcome: 'Failed' },
+      'Unit Tests': [
+        { testName: 'Successful Login', duration: '200ms', outcome: 'Passed' },
+        { testName: 'Failed Login', duration: '150ms', outcome: 'Failed' },
       ],
-      'Storage B': [
-        { testName: 'Test 3', duration: '700ms', outcome: 'Passed' },
+      'Integration Tests': [
+        { testName: 'Process Payment', duration: '350ms', outcome: 'Passed' },
       ],
     },
   };
 
   return NextResponse.json(mockData);
 }
+
+// import { NextResponse } from 'next/server';
+// import { getApplicationTestScope } from '../get-application-test-scope/get-application-test-scope';
+
+// export async function GET(request: Request) {
+//   const { searchParams } = new URL(request.url);
+//   const app = searchParams.get('app');
+
+//   const applicationTestScope = await getApplicationTestScope(app);
+
+//   if (!app || !applicationTestScope[app]) {
+//     return NextResponse.json(
+//       { error: 'Application not found or not specified' },
+//       { status: 404 },
+//     );
+//   }
+
+//   const appData = applicationTestScope[app];
+
+//   const responseData = {
+//     totalTests: appData.testResults?.totalTests ?? 0,
+//     codeCoverage:
+//       appData.codeCoverage?.flatMap(
+//         (coverage) =>
+//           coverage.modules?.map((module) => ({
+//             module: module.name || 'Unknown Module',
+//             coverage: module.statistics?.linesCovered ?? 0,
+//           })) ?? [],
+//       ) ?? [],
+//     testGroups: appData.testResults?.testGroups ?? {},
+//   };
+
+//   return NextResponse.json(responseData);
+// }
