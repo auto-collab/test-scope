@@ -9,28 +9,13 @@ interface ProjectSelectorProps {
 }
 
 export default function ProjectSelector({ options }: ProjectSelectorProps) {
-  // const options = [
-  //   {
-  //     value: "project1",
-  //     label: "Project 1",
-  //   },
-  //   {
-  //     value: "project2",
-  //     label: "Project 2",
-  //   },
-  //   {
-  //     value: "project3",
-  //     label: "Project 3",
-  //   },
-  // ];
-
   return (
     <div>
       <Select
         id="project-selector"
-        className="p-2 border rounded"
+        className="p-2 rounded"
         options={options}
-        placeholder="Select a project"
+        placeholder="Select an application"
       />
     </div>
   );
