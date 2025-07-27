@@ -1,0 +1,21 @@
+{
+  "terminal.integrated.defaultProfile.windows": "pwsh",
+  "terminal.integrated.profiles.windows": {
+    "pwsh": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    }
+  },
+
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "*.jsx": "javascriptreact",
+    "*.ts": "typescriptreact",
+    "*.tsx": "typescriptreact"
+  }
+}
