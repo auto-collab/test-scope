@@ -6,9 +6,9 @@ export default function MetricBox({
   value?: string;
 }) {
   return (
-    <div className="p-8 rounded border-2">
-      <div className="flex flex-col items-center">
-        <span id="metric-title" className="font-bold">
+    <div className="p-4 border-2 rounded">
+      <div className="flex flex-col items-center p-2">
+        <span id="metric-title" className="font-bold underline mb-2">
           {title}
         </span>
         <span id="metric-value" className="text-2xl font-bold">
