@@ -18,7 +18,7 @@ export default function Dashboard() {
           />
         </div>
         <div className="flex gap-4 justify-center col-span-1 sm:col-span-9">
-          <MetricBox title="Test metric 1" value="15%" />
+          <MetricBox title="Test metric 1" value="Fail" />
           <MetricBox title="Test metric 2" value="30%" />
           <MetricBox title="Test metric 3" value="45%" />
           <MetricBox title="Test metric 4" value="60%" />
