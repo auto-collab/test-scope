@@ -1,6 +1,6 @@
 import { render, screen } from '../utils/test-utils';
 import TestScopeDashboard from '../../app/components/test-scope-dashboard';
-import { mockApplications } from '../utils/mock-data';
+import { mockApplications, mockWarningApplication } from '../utils/mock-data';
 
 describe('TestScopeDashboard', () => {
   it('renders dashboard with application data', () => {
@@ -23,5 +23,12 @@ describe('TestScopeDashboard', () => {
     render(<TestScopeDashboard application={mockApplications[0]} />);
     
     expect(screen.getByText('Main e-commerce application with payment processing')).toBeInTheDocument();
+  });
+
+  it('displays "No coverage data provided" for pipelines without coverage', () => {
+    render(<TestScopeDashboard application={mockWarningApplication} />);
+    
+    // Should find multiple instances - both for Legacy System Integration and E2E Tests Pipeline
+    expect(screen.getAllByText('No coverage data provided')).toHaveLength(2);
   });
 });

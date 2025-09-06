@@ -377,6 +377,48 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
               },
               codeCoverage: undefined,
               qualityGates: []
+            },
+            {
+              id: 6,
+              name: 'Legacy API Integration',
+              type: 'build',
+              status: 'success',
+              lastRun: {
+                id: 12350,
+                buildNumber: '2024.1.15.6',
+                status: 'completed',
+                result: 'succeeded',
+                queueTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+                startTime: new Date(Date.now() - 45 * 60 * 1000 + 1 * 60 * 1000).toISOString(),
+                finishTime: new Date(Date.now() - 45 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
+                sourceBranch: 'feature/legacy-integration',
+                sourceVersion: 'mno345pqr678',
+                definition: {} as any,
+                repository: {} as any,
+                requestedBy: {} as any,
+                requestedFor: {} as any,
+                lastChangedBy: {} as any,
+                lastChangedDate: new Date().toISOString(),
+                keepForever: false,
+                retainIndefinitely: false,
+                hasDiagnostics: false,
+                definitionRevision: 1,
+                queue: {} as any,
+                tags: []
+              },
+              testResults: {
+                total: 32,
+                passed: 29,
+                failed: 3,
+                skipped: 0,
+                passRate: 90.6,
+                duration: 2.3
+              },
+              codeCoverage: undefined, // No coverage tooling configured for legacy system
+              qualityGates: [
+                { name: 'Test Pass Rate', status: 'passed', threshold: 85, actual: 90.6, unit: '%' },
+                { name: 'Build Time', status: 'passed', threshold: 10, actual: 7.2, unit: 'min' }
+              ]
             }
           ],
           lastUpdated: new Date().toISOString(),

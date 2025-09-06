@@ -113,9 +113,9 @@ export default function TestScopeDashboard({ application }: TestScopeDashboardPr
         />
         <MetricBox
           title="Code Coverage"
-          value={`${metrics.avgCodeCoverage.toFixed(1)}%`}
-          status={getCoverageStatus(metrics.avgCodeCoverage)}
-          subtitle="Average line coverage"
+          value={metrics.avgCodeCoverage > 0 ? `${metrics.avgCodeCoverage.toFixed(1)}%` : "No Coverage provided"}
+          status={metrics.avgCodeCoverage > 0 ? getCoverageStatus(metrics.avgCodeCoverage) : 'warning'}
+          subtitle={metrics.avgCodeCoverage > 0 ? "Average line coverage" : "Coverage data unavailable"}
         />
         <MetricBox
           title="Total Tests"
@@ -199,8 +199,8 @@ function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
         </div>
       )}
 
-      {pipeline.codeCoverage && (
-        <div className="mt-3 pt-3 border-t">
+      <div className="mt-3 pt-3 border-t">
+        {pipeline.codeCoverage ? (
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Line Coverage:</span>
@@ -215,8 +215,13 @@ function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
               <span className="ml-1 font-medium">{pipeline.codeCoverage.functionCoverage.toFixed(1)}%</span>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-sm text-gray-500 italic">
+            <span className="text-gray-500">Code Coverage:</span>
+            <span className="ml-1">No coverage data provided</span>
+          </div>
+        )}
+      </div>
 
       {/* Test Details Toggle */}
       {pipeline.detailedTestResults && pipeline.detailedTestResults.length > 0 && (

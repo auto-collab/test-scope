@@ -150,6 +150,34 @@ export const mockRunningPipeline: PipelineSummary = {
   qualityGates: []
 };
 
+export const mockNoCoveragePipeline: PipelineSummary = {
+  id: 6,
+  name: 'Legacy System Integration',
+  type: 'build',
+  status: 'success',
+  lastRun: {
+    ...mockBuild,
+    id: 12350,
+    buildNumber: '2024.1.15.6',
+    result: 'succeeded',
+    sourceBranch: 'feature/legacy-integration',
+    sourceVersion: 'mno345pqr678'
+  },
+  testResults: {
+    total: 42,
+    passed: 40,
+    failed: 2,
+    skipped: 0,
+    passRate: 95.2,
+    duration: 3.8
+  },
+  codeCoverage: undefined, // No coverage tooling configured for this legacy pipeline
+  qualityGates: [
+    { name: 'Test Pass Rate', status: 'passed', threshold: 90, actual: 95.2, unit: '%' },
+    { name: 'Build Time', status: 'passed', threshold: 10, actual: 8.5, unit: 'min' }
+  ]
+};
+
 export const mockHealthyApplication: Application = {
   id: 'app1',
   name: 'E-Commerce Platform',
@@ -163,7 +191,7 @@ export const mockWarningApplication: Application = {
   id: 'app2',
   name: 'User Management Service',
   description: 'Microservice for user authentication and authorization',
-  pipelines: [mockSuccessfulPipeline, mockRunningPipeline],
+  pipelines: [mockSuccessfulPipeline, mockNoCoveragePipeline, mockRunningPipeline],
   lastUpdated: new Date().toISOString(),
   overallHealth: 'warning'
 };
