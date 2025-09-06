@@ -330,6 +330,7 @@ export interface PipelineSummary {
   testResults?: TestResultsSummary;
   codeCoverage?: CodeCoverageSummary;
   qualityGates?: QualityGateSummary[];
+  detailedTestResults?: TestResultsDetails[];
 }
 
 export interface TestResultsSummary {
@@ -355,4 +356,37 @@ export interface QualityGateSummary {
   threshold: number;
   actual: number;
   unit: string;
+}
+
+// Detailed Test Results - Based on Azure DevOps REST API
+export interface TestResult {
+  id: number;
+  testCaseTitle: string;
+  automatedTestName: string;
+  testCaseReferenceId?: number;
+  outcome: 'passed' | 'failed' | 'inconclusive' | 'timeout' | 'aborted' | 'blocked' | 'notExecuted' | 'warning' | 'error' | 'notApplicable' | 'paused' | 'inProgress' | 'notImpacted';
+  state: 'pending' | 'queued' | 'inProgress' | 'paused' | 'completed';
+  priority: number;
+  errorMessage?: string;
+  stackTrace?: string;
+  durationInMs: number;
+  startedDate: string;
+  completedDate: string;
+  testRun: {
+    id: number;
+    name: string;
+  };
+  owner?: IdentityRef;
+  runBy?: IdentityRef;
+  lastUpdatedBy?: IdentityRef;
+  lastUpdatedDate?: string;
+  associatedBugs?: any[];
+  customFields?: any[];
+}
+
+export interface TestResultsDetails {
+  results: TestResult[];
+  totalCount: number;
+  testAssembly: string;
+  testContainer: string;
 }

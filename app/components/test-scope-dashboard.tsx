@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import MetricBox from './metric-box';
+import TestResultsDetailsComponent from './test-results-details';
 import { Application, PipelineSummary } from '../types/azure-devops';
 
 interface TestScopeDashboardProps {
@@ -148,6 +149,8 @@ export default function TestScopeDashboard({ application }: TestScopeDashboardPr
 }
 
 function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
+  const [showTestDetails, setShowTestDetails] = useState(false);
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success': return 'text-green-600 bg-green-100';
@@ -212,6 +215,30 @@ function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
               <span className="ml-1 font-medium">{pipeline.codeCoverage.functionCoverage.toFixed(1)}%</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Test Details Toggle */}
+      {pipeline.detailedTestResults && pipeline.detailedTestResults.length > 0 && (
+        <div className="mt-3 pt-3 border-t">
+          <button
+            onClick={() => setShowTestDetails(!showTestDetails)}
+            className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <span className={`transform transition-transform ${showTestDetails ? 'rotate-90' : ''}`}>
+              ▶
+            </span>
+            <span>
+              {showTestDetails ? 'Hide' : 'Show'} Test Details 
+              ({pipeline.detailedTestResults.reduce((sum, assembly) => sum + assembly.totalCount, 0)} tests)
+            </span>
+          </button>
+
+          {showTestDetails && (
+            <div className="mt-3">
+              <TestResultsDetailsComponent testResults={pipeline.detailedTestResults} />
+            </div>
+          )}
         </div>
       )}
     </div>

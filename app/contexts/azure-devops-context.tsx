@@ -107,6 +107,72 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
                 { name: 'Code Coverage', status: 'passed', threshold: 80, actual: 87.3, unit: '%' },
                 { name: 'Test Pass Rate', status: 'passed', threshold: 95, actual: 97.1, unit: '%' },
                 { name: 'Build Time', status: 'passed', threshold: 20, actual: 15, unit: 'min' }
+              ],
+              detailedTestResults: [
+                {
+                  testAssembly: 'ECommerce.Tests.dll',
+                  testContainer: 'ECommerce.Tests.Unit',
+                  totalCount: 145,
+                  results: [
+                    {
+                      id: 1001,
+                      testCaseTitle: 'Should calculate total price correctly',
+                      automatedTestName: 'ECommerce.Tests.Unit.OrderTests.CalculateTotalPrice_ValidItems_ReturnsCorrectTotal',
+                      outcome: 'passed',
+                      state: 'completed',
+                      priority: 1,
+                      durationInMs: 45,
+                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 45).toISOString(),
+                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
+                    },
+                    {
+                      id: 1002,
+                      testCaseTitle: 'Should validate payment method',
+                      automatedTestName: 'ECommerce.Tests.Unit.PaymentTests.ValidatePaymentMethod_InvalidCard_ThrowsException',
+                      outcome: 'passed',
+                      state: 'completed',
+                      priority: 1,
+                      durationInMs: 32,
+                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 32).toISOString(),
+                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
+                    },
+                    {
+                      id: 1003,
+                      testCaseTitle: 'Should handle inventory updates',
+                      automatedTestName: 'ECommerce.Tests.Unit.InventoryTests.UpdateInventory_OutOfStock_UpdatesCorrectly',
+                      outcome: 'failed',
+                      state: 'completed',
+                      priority: 1,
+                      errorMessage: 'Expected inventory count to be 0, but was 1',
+                      stackTrace: 'at ECommerce.Tests.Unit.InventoryTests.UpdateInventory_OutOfStock_UpdatesCorrectly() line 45',
+                      durationInMs: 78,
+                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 78).toISOString(),
+                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
+                    }
+                  ]
+                },
+                {
+                  testAssembly: 'ECommerce.Integration.Tests.dll',
+                  testContainer: 'ECommerce.Tests.Integration',
+                  totalCount: 100,
+                  results: [
+                    {
+                      id: 2001,
+                      testCaseTitle: 'Should process order end-to-end',
+                      automatedTestName: 'ECommerce.Tests.Integration.OrderWorkflowTests.ProcessOrder_ValidOrder_CompletesSuccessfully',
+                      outcome: 'passed',
+                      state: 'completed',
+                      priority: 2,
+                      durationInMs: 1250,
+                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 1250).toISOString(),
+                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
+                    }
+                  ]
+                }
               ]
             },
             {
