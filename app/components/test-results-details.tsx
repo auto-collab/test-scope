@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { TestResultsDetails, TestResult } from '../types/azure-devops';
+import { TestResultsDetails } from '../types/azure-devops';
 
 interface TestResultsDetailsProps {
   testResults: TestResultsDetails[];

@@ -40,8 +40,8 @@ export default function AzureDevOpsSetupGuide() {
             <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
               <li>Go to your Azure DevOps organization</li>
               <li>Click on your profile picture → Personal Access Tokens</li>
-              <li>Click "New Token"</li>
-              <li>Set name: "Test Scope Dashboard"</li>
+              <li>Click &quot;New Token&quot;</li>
+              <li>Set name: &quot;Test Scope Dashboard&quot;</li>
               <li>Set expiration: 1 year</li>
               <li>Select these scopes:
                 <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
@@ -51,7 +51,7 @@ export default function AzureDevOpsSetupGuide() {
                   <li><strong>Project and Team</strong> - Read</li>
                 </ul>
               </li>
-              <li>Click "Create" and copy the token</li>
+              <li>Click &quot;Create&quot; and copy the token</li>
             </ol>
           </div>
 
