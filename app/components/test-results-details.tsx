@@ -153,23 +153,23 @@ export default function TestResultsDetailsComponent({ testResults }: TestResults
                       {/* Expanded Test Details */}
                       {isTestExpanded && (
                         <div className="px-6 pb-3 bg-gray-50">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
                             <div>
-                              <div className="space-y-1">
-                                <div><strong>Test ID:</strong> {test.id}</div>
-                                <div><strong>Priority:</strong> {test.priority}</div>
-                                <div><strong>State:</strong> {test.state}</div>
-                                <div><strong>Started:</strong> {new Date(test.startedDate).toLocaleString()}</div>
-                                <div><strong>Completed:</strong> {new Date(test.completedDate).toLocaleString()}</div>
+                              <div className="space-y-2">
+                                <div><strong className="text-gray-900">Test ID:</strong> <span className="text-gray-700">{test.id}</span></div>
+                                <div><strong className="text-gray-900">Priority:</strong> <span className="text-gray-700">{test.priority}</span></div>
+                                <div><strong className="text-gray-900">State:</strong> <span className="text-gray-700">{test.state}</span></div>
+                                <div><strong className="text-gray-900">Started:</strong> <span className="text-gray-700">{new Date(test.startedDate).toLocaleString()}</span></div>
+                                <div><strong className="text-gray-900">Completed:</strong> <span className="text-gray-700">{new Date(test.completedDate).toLocaleString()}</span></div>
                               </div>
                             </div>
                             
                             <div>
-                              <div className="space-y-1">
-                                <div><strong>Test Run:</strong> {test.testRun.name} (#{test.testRun.id})</div>
-                                <div><strong>Duration:</strong> {formatDuration(test.durationInMs)}</div>
+                              <div className="space-y-2">
+                                <div><strong className="text-gray-900">Test Run:</strong> <span className="text-gray-700">{test.testRun.name} (#{test.testRun.id})</span></div>
+                                <div><strong className="text-gray-900">Duration:</strong> <span className="text-gray-700">{formatDuration(test.durationInMs)}</span></div>
                                 {test.testCaseReferenceId && (
-                                  <div><strong>Reference ID:</strong> {test.testCaseReferenceId}</div>
+                                  <div><strong className="text-gray-900">Reference ID:</strong> <span className="text-gray-700">{test.testCaseReferenceId}</span></div>
                                 )}
                               </div>
                             </div>
@@ -178,13 +178,13 @@ export default function TestResultsDetailsComponent({ testResults }: TestResults
                           {/* Error Details */}
                           {test.errorMessage && (
                             <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-                              <h6 className="font-medium text-red-800 text-xs mb-1">Error Message:</h6>
-                              <p className="text-red-700 text-xs mb-2">{test.errorMessage}</p>
+                              <h6 className="font-medium text-red-800 text-sm mb-1">Error Message:</h6>
+                              <p className="text-red-700 text-sm mb-2">{test.errorMessage}</p>
                               
                               {test.stackTrace && (
                                 <>
-                                  <h6 className="font-medium text-red-800 text-xs mb-1">Stack Trace:</h6>
-                                  <pre className="text-red-700 text-xs whitespace-pre-wrap font-mono bg-red-100 p-2 rounded">
+                                  <h6 className="font-medium text-red-800 text-sm mb-1">Stack Trace:</h6>
+                                  <pre className="text-red-700 text-sm whitespace-pre-wrap font-mono bg-red-100 p-2 rounded">
                                     {test.stackTrace}
                                   </pre>
                                 </>

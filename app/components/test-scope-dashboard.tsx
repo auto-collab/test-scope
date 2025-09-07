@@ -181,20 +181,20 @@ function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
       {pipeline.testResults && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">Tests:</span>
-            <span className="ml-1 font-medium">{pipeline.testResults.total}</span>
+            <span className="text-gray-600">Tests:</span>
+            <span className="ml-1 font-semibold text-gray-900">{pipeline.testResults.total}</span>
           </div>
           <div>
-            <span className="text-gray-500">Passed:</span>
-            <span className="ml-1 font-medium text-green-600">{pipeline.testResults.passed}</span>
+            <span className="text-gray-600">Passed:</span>
+            <span className="ml-1 font-semibold text-green-700">{pipeline.testResults.passed}</span>
           </div>
           <div>
-            <span className="text-gray-500">Failed:</span>
-            <span className="ml-1 font-medium text-red-600">{pipeline.testResults.failed}</span>
+            <span className="text-gray-600">Failed:</span>
+            <span className="ml-1 font-semibold text-red-700">{pipeline.testResults.failed}</span>
           </div>
           <div>
-            <span className="text-gray-500">Duration:</span>
-            <span className="ml-1 font-medium">{pipeline.testResults.duration.toFixed(1)}m</span>
+            <span className="text-gray-600">Duration:</span>
+            <span className="ml-1 font-semibold text-gray-900">{pipeline.testResults.duration.toFixed(1)}m</span>
           </div>
         </div>
       )}
@@ -203,22 +203,22 @@ function PipelineCard({ pipeline }: { pipeline: PipelineSummary }) {
         {pipeline.codeCoverage ? (
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">Line Coverage:</span>
-              <span className="ml-1 font-medium">{pipeline.codeCoverage.lineCoverage.toFixed(1)}%</span>
+              <span className="text-gray-600">Line Coverage:</span>
+              <span className="ml-1 font-semibold text-gray-900">{pipeline.codeCoverage.lineCoverage.toFixed(1)}%</span>
             </div>
             <div>
-              <span className="text-gray-500">Branch Coverage:</span>
-              <span className="ml-1 font-medium">{pipeline.codeCoverage.branchCoverage.toFixed(1)}%</span>
+              <span className="text-gray-600">Branch Coverage:</span>
+              <span className="ml-1 font-semibold text-gray-900">{pipeline.codeCoverage.branchCoverage.toFixed(1)}%</span>
             </div>
             <div>
-              <span className="text-gray-500">Function Coverage:</span>
-              <span className="ml-1 font-medium">{pipeline.codeCoverage.functionCoverage.toFixed(1)}%</span>
+              <span className="text-gray-600">Function Coverage:</span>
+              <span className="ml-1 font-semibold text-gray-900">{pipeline.codeCoverage.functionCoverage.toFixed(1)}%</span>
             </div>
           </div>
         ) : (
-          <div className="text-sm text-gray-500 italic">
-            <span className="text-gray-500">Code Coverage:</span>
-            <span className="ml-1">No coverage data provided</span>
+          <div className="text-sm italic">
+            <span className="text-gray-600">Code Coverage:</span>
+            <span className="ml-1 text-gray-700">No coverage data provided</span>
           </div>
         )}
       </div>
