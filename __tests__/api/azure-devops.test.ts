@@ -155,7 +155,7 @@ describe('/api/azure-devops', () => {
     await POST(mockRequest);
 
     expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Failed to connect to Azure DevOps' },
+      { error: expect.stringContaining('Failed to connect to Azure DevOps') },
       { status: 500 }
     );
 
@@ -184,7 +184,7 @@ describe('/api/azure-devops', () => {
     await POST(mockRequest);
 
     expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Failed to connect to Azure DevOps' },
+      { error: expect.stringContaining('Failed to connect to Azure DevOps') },
       { status: 500 }
     );
 
@@ -205,7 +205,7 @@ describe('/api/azure-devops', () => {
     await POST(mockRequest);
 
     expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Failed to connect to Azure DevOps' },
+      { error: expect.stringContaining('Failed to connect to Azure DevOps') },
       { status: 500 }
     );
 

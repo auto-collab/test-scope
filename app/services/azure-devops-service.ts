@@ -24,6 +24,13 @@ export class AzureDevOpsService {
   }
 
   private async fetchFromAzureDevOps(endpoint: string): Promise<any> {
+    console.log('Service calling API route with:', { 
+      organization: this.config.organization, 
+      project: this.config.project, 
+      endpoint,
+      hasToken: !!this.config.personalAccessToken 
+    });
+    
     // Use server-side API route instead of direct client-side calls
     const response = await fetch('/api/azure-devops', {
       method: 'POST',
@@ -36,12 +43,23 @@ export class AzureDevOpsService {
       })
     });
 
+    console.log('Service received response:', { 
+      status: response.status, 
+      ok: response.ok 
+    });
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Service API error:', errorData);
       throw new Error(`API error: ${response.status} ${errorData.error || response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('Service received data:', { 
+      hasValue: !!data.value, 
+      valueLength: data.value?.length || 0 
+    });
+    return data;
   }
 
   async getBuildDefinitions(projectId: string): Promise<any[]> {

@@ -11,8 +11,16 @@ export async function POST(request: NextRequest) {
   try {
     const { organization, project, personalAccessToken, endpoint } = await request.json();
     
+    console.log('API Route received:', { 
+      organization, 
+      project, 
+      hasToken: !!personalAccessToken, 
+      endpoint 
+    });
+    
     // Validate required fields
     if (!organization || !personalAccessToken) {
+      console.log('Missing required fields:', { organization, hasToken: !!personalAccessToken });
       return NextResponse.json(
         { error: 'Missing required configuration fields' },
         { status: 400 }
@@ -22,24 +30,35 @@ export async function POST(request: NextRequest) {
     // Use the provided endpoint or default to projects
     const apiEndpoint = endpoint || '/_apis/projects';
     const baseUrl = `https://dev.azure.com/${organization}`;
+    const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.2-preview.1`;
     
-    const response = await fetch(`${baseUrl}${apiEndpoint}?api-version=7.2-preview.1`, {
+    console.log('Making request to:', fullUrl);
+    
+    const response = await fetch(fullUrl, {
       headers: {
         'Authorization': `Basic ${Buffer.from(`:${personalAccessToken}`).toString('base64')}`,
         'Content-Type': 'application/json',
       },
     });
 
+    console.log('Response status:', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error(`Azure DevOps API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Azure DevOps API error response:', errorText);
+      throw new Error(`Azure DevOps API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Successfully fetched data:', { 
+      hasValue: !!data.value, 
+      valueLength: data.value?.length || 0 
+    });
     return NextResponse.json(data);
   } catch (error) {
     console.error('Azure DevOps API error:', error);
     return NextResponse.json(
-      { error: 'Failed to connect to Azure DevOps' },
+      { error: `Failed to connect to Azure DevOps: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
