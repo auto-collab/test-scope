@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
     try {
       // Try to parse as JSON first (for tests and direct calls)
       const data = await request.json();
+      console.log('API Route received raw data:', data);
       ({ organization, project, personalAccessToken, endpoint } = data);
-      console.log('API Route received JSON:', { 
+      console.log('API Route extracted values:', { 
         organization, 
         project, 
         hasToken: !!personalAccessToken, 
@@ -26,8 +27,9 @@ export async function POST(request: NextRequest) {
       const rawBody = await request.text();
       console.log('API Route received raw body:', rawBody);
       const parsed = JSON.parse(rawBody);
+      console.log('API Route parsed JSON:', parsed);
       ({ organization, project, personalAccessToken, endpoint } = parsed);
-      console.log('API Route parsed from text:', { 
+      console.log('API Route extracted from text:', { 
         organization, 
         project, 
         hasToken: !!personalAccessToken, 

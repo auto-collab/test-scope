@@ -96,8 +96,10 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       }
       
       // Create the Azure DevOps service
+      console.log('Creating Azure DevOps service with config:', config);
       const service = new AzureDevOpsService(config);
       setAzureDevOpsService(service);
+      console.log('Service created successfully');
       
       // Validate application configurations (only warn if we don't have env vars)
       const validation = validateApplicationConfigs();
@@ -138,10 +140,19 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
         return;
       }
 
-      // Fetch all applications from configuration
-      const applicationPromises = APPLICATION_CONFIGS.map(appConfig => 
-        azureDevOpsService.fetchApplicationData(appConfig)
-      );
+      // Fetch all applications from configuration, using the real project ID from the service
+      const realProjectId = azureDevOpsService.getConfig().project;
+      console.log('Using real project ID for applications:', realProjectId);
+      
+      const applicationPromises = APPLICATION_CONFIGS.map(appConfig => {
+        // Override the projectId with the real one from environment variables
+        const realAppConfig = {
+          ...appConfig,
+          projectId: realProjectId
+        };
+        console.log(`Fetching data for application: ${appConfig.name} with project: ${realProjectId}`);
+        return azureDevOpsService.fetchApplicationData(realAppConfig);
+      });
 
       const applications = await Promise.all(applicationPromises);
 

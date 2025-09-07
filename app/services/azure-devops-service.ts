@@ -23,6 +23,10 @@ export class AzureDevOpsService {
     };
   }
 
+  getConfig(): AzureDevOpsConfig {
+    return this.config;
+  }
+
   private async fetchFromAzureDevOps(endpoint: string): Promise<any> {
     console.log('Service calling API route with:', { 
       organization: this.config.organization, 
