@@ -36,26 +36,54 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [error, setError] = useState<string | null>(null);
   const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
 
-  // Show configured applications immediately, even without Azure DevOps connection
+  // Auto-initialize with environment variables on mount
   useEffect(() => {
-    const showConfiguredApplications = () => {
-      // Convert APPLICATION_CONFIGS to Application objects for display
-      const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
-        id: appConfig.id,
-        name: appConfig.name,
-        description: appConfig.description,
-        pipelines: [], // Empty for now, will be populated when connected
-        lastUpdated: new Date().toISOString(),
-        overallHealth: 'warning' as const
-      }));
+    const initializeFromEnv = async () => {
+      const org = process.env.NEXT_PUBLIC_AZURE_DEVOPS_ORG;
+      const pat = process.env.NEXT_PUBLIC_AZURE_DEVOPS_PAT;
+      const project = APPLICATION_CONFIGS[0]?.projectId; // Use first app's project ID
       
-      setApplications(configuredApps);
-      if (configuredApps.length > 0) {
-        setSelectedApplication(configuredApps[0]);
+      console.log('Environment variables check:', { 
+        org: org ? 'SET' : 'NOT SET', 
+        pat: pat ? 'SET' : 'NOT SET', 
+        project 
+      });
+      
+      if (org && pat && project) {
+        const config: AzureDevOpsConfig = {
+          organization: org,
+          project: project,
+          personalAccessToken: pat
+        };
+        
+        console.log('Auto-initializing with env vars:', { 
+          organization: config.organization, 
+          project: config.project,
+          hasToken: !!config.personalAccessToken 
+        });
+        
+        initializeService(config);
+        await refreshApplications();
+      } else {
+        console.log('No environment variables found, showing configured apps only');
+        // If no env vars, show configured applications without connection
+        const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
+          id: appConfig.id,
+          name: appConfig.name,
+          description: appConfig.description,
+          pipelines: [], // Empty for now, will be populated when connected
+          lastUpdated: new Date().toISOString(),
+          overallHealth: 'warning' as const
+        }));
+        
+        setApplications(configuredApps);
+        if (configuredApps.length > 0) {
+          setSelectedApplication(configuredApps[0]);
+        }
       }
     };
     
-    showConfiguredApplications();
+    initializeFromEnv();
   }, []);
 
   const initializeService = (config: AzureDevOpsConfig) => {
