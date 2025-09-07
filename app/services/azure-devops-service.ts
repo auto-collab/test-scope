@@ -48,6 +48,9 @@ export class AzureDevOpsService {
     
     console.log('Service sending request body:', JSON.stringify(requestBody, null, 2));
     
+    // Add a small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Use server-side API route instead of direct client-side calls
     const response = await fetch('/api/azure-devops', {
       method: 'POST',
@@ -76,31 +79,22 @@ export class AzureDevOpsService {
     return data;
   }
 
-  async getBuildDefinitions(projectId: string): Promise<any[]> {
-    const endpoint = `/${projectId}/_apis/build/definitions`;
-    const response = await this.fetchFromAzureDevOps(endpoint);
-    const definitions = response.value || [];
-    
-    console.log(`Found ${definitions.length} build definitions in project ${projectId}:`);
-    definitions.forEach((def, index) => {
-      console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
-    });
-    
-    return definitions;
-  }
+  // Removed getBuildDefinitions to avoid rate limiting - we now search for specific pipelines only
 
   async findBuildDefinitionByName(projectId: string, pipelineName: string): Promise<any | null> {
     console.log(`Searching for pipeline: "${pipelineName}" in project: ${projectId}`);
-    const definitions = await this.getBuildDefinitions(projectId);
+    
+    // Use a more targeted search to avoid rate limiting
+    const endpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}`;
+    const response = await this.fetchFromAzureDevOps(endpoint);
+    const definitions = response.value || [];
+    
     const found = definitions.find(def => def.name === pipelineName);
     
     if (found) {
       console.log(`✅ Found pipeline: "${found.name}" (ID: ${found.id})`);
     } else {
-      console.log(`❌ Pipeline "${pipelineName}" not found. Available pipelines:`);
-      definitions.forEach((def, index) => {
-        console.log(`  ${index + 1}. "${def.name}"`);
-      });
+      console.log(`❌ Pipeline "${pipelineName}" not found.`);
     }
     
     return found || null;
@@ -198,13 +192,13 @@ export class AzureDevOpsService {
   async fetchPipelineData(appConfig: ApplicationConfig, pipelineConfig: PipelineConfig): Promise<PipelineSummary> {
     console.log(`fetchPipelineData called for pipeline: ${pipelineConfig.name} in project: ${appConfig.projectId}`);
     try {
-      // First, find the build definition by name
+      // First, find the build definition by name (this will only search for the specific pipeline)
       const buildDefinition = await this.findBuildDefinitionByName(appConfig.projectId, pipelineConfig.name);
       
       if (!buildDefinition) {
         console.warn(`Pipeline "${pipelineConfig.name}" not found in project ${appConfig.projectId}`);
         return {
-          id: 0, // Will be set to actual ID if found
+          id: 0,
           name: pipelineConfig.name,
           type: pipelineConfig.type,
           status: 'unknown',
