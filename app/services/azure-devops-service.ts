@@ -126,7 +126,7 @@ export class AzureDevOpsService {
       console.log(`Targeted search returned ${targetedDefinitions.length} definitions`);
       
       // Try exact match in targeted results first
-      let found = targetedDefinitions.find(def => def.name === pipelineName);
+      let found = targetedDefinitions.find((def: any) => def.name === pipelineName);
       
       if (found) {
         console.log(`✅ Found exact match via targeted search: "${found.name}" (ID: ${found.id})`);
@@ -134,7 +134,7 @@ export class AzureDevOpsService {
       }
       
       // Try case-insensitive match in targeted results
-      found = targetedDefinitions.find(def => def.name.toLowerCase() === pipelineName.toLowerCase());
+      found = targetedDefinitions.find((def: any) => def.name.toLowerCase() === pipelineName.toLowerCase());
       
       if (found) {
         console.log(`✅ Found case-insensitive match via targeted search: "${found.name}" (ID: ${found.id})`);
@@ -143,7 +143,7 @@ export class AzureDevOpsService {
       
       // If targeted search returned some results, try partial matching on those
       if (targetedDefinitions.length > 0) {
-        found = targetedDefinitions.find(def => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
+        found = targetedDefinitions.find((def: any) => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
         
         if (found) {
           console.log(`✅ Found partial match via targeted search: "${found.name}" (ID: ${found.id})`);
@@ -162,7 +162,7 @@ export class AzureDevOpsService {
       // Log all available pipeline names for debugging (only if we had to do comprehensive search)
       if (allDefinitions.length <= 20) { // Only log if reasonable number
         console.log('Available pipeline names:');
-        allDefinitions.forEach((def, index) => {
+        allDefinitions.forEach((def: any, index: number) => {
           console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
         });
       } else {
@@ -170,7 +170,7 @@ export class AzureDevOpsService {
       }
       
       // Try exact match in all definitions
-      found = allDefinitions.find(def => def.name === pipelineName);
+      found = allDefinitions.find((def: any) => def.name === pipelineName);
       
       if (found) {
         console.log(`✅ Found exact match in comprehensive search: "${found.name}" (ID: ${found.id})`);
@@ -178,7 +178,7 @@ export class AzureDevOpsService {
       }
       
       // Try case-insensitive match in all definitions
-      found = allDefinitions.find(def => def.name.toLowerCase() === pipelineName.toLowerCase());
+      found = allDefinitions.find((def: any) => def.name.toLowerCase() === pipelineName.toLowerCase());
       
       if (found) {
         console.log(`✅ Found case-insensitive match in comprehensive search: "${found.name}" (ID: ${found.id})`);
@@ -186,7 +186,7 @@ export class AzureDevOpsService {
       }
       
       // Try partial match in all definitions
-      found = allDefinitions.find(def => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
+      found = allDefinitions.find((def: any) => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
       
       if (found) {
         console.log(`✅ Found partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
@@ -194,7 +194,7 @@ export class AzureDevOpsService {
       }
       
       // Try reverse partial match
-      found = allDefinitions.find(def => pipelineName.toLowerCase().includes(def.name.toLowerCase()));
+      found = allDefinitions.find((def: any) => pipelineName.toLowerCase().includes(def.name.toLowerCase()));
       
       if (found) {
         console.log(`✅ Found reverse partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
@@ -203,7 +203,7 @@ export class AzureDevOpsService {
       
       console.log(`❌ Pipeline "${pipelineName}" not found in any search method.`);
       if (allDefinitions.length <= 50) { // Only show names if reasonable number
-        console.log(`Available pipeline names: ${allDefinitions.map(d => d.name).join(', ')}`);
+        console.log(`Available pipeline names: ${allDefinitions.map((d: any) => d.name).join(', ')}`);
       } else {
         console.log(`Found ${allDefinitions.length} total pipelines - too many to list names`);
       }
@@ -221,7 +221,7 @@ export class AzureDevOpsService {
     const builds = response.value || [];
     
     console.log(`Found ${builds.length} builds for definition ${definitionId}:`);
-    builds.forEach((build, index) => {
+    builds.forEach((build: any, index: number) => {
       console.log(`  ${index + 1}. Build ${build.id} - Status: ${build.status}, Result: ${build.result}`);
     });
     
@@ -234,7 +234,7 @@ export class AzureDevOpsService {
     const testRuns = response.value || [];
     
     console.log(`Found ${testRuns.length} test runs for build ${buildId}:`);
-    testRuns.forEach((run, index) => {
+    testRuns.forEach((run: any, index: number) => {
       console.log(`  ${index + 1}. Test Run ${run.id} - State: ${run.state}, Statistics: ${run.runStatistics?.length || 0} stats`);
     });
     
@@ -325,7 +325,7 @@ export class AzureDevOpsService {
       const coverage = coverageData.coverageData[0];
       const stats = coverage.coverageStats || [];
 
-      console.log(`Found ${stats.length} coverage statistics:`, stats.map(s => `${s.label}: ${s.covered}/${s.total}`));
+      console.log(`Found ${stats.length} coverage statistics:`, stats.map((s: any) => `${s.label}: ${s.covered}/${s.total}`));
 
       const lineCoverage = stats.find((s: any) => s.label === 'Lines');
       const branchCoverage = stats.find((s: any) => s.label === 'Branches');
