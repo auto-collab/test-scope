@@ -51,7 +51,15 @@ export async function POST(request: NextRequest) {
     const baseUrl = `https://dev.azure.com/${organization}`;
     const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.2-preview.1`;
     
-    console.log('Making request to:', fullUrl);
+    console.log('=== AZURE DEVOPS API CALL ===');
+    console.log('Organization:', organization);
+    console.log('Project:', project);
+    console.log('Endpoint:', apiEndpoint);
+    console.log('Base URL:', baseUrl);
+    console.log('FULL URL:', fullUrl);
+    console.log('Has PAT:', !!personalAccessToken);
+    console.log('PAT Length:', personalAccessToken?.length || 0);
+    console.log('==============================');
     
     const response = await fetch(fullUrl, {
       headers: {
