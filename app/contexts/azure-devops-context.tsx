@@ -36,6 +36,28 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [error, setError] = useState<string | null>(null);
   const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
 
+  // Show configured applications immediately, even without Azure DevOps connection
+  useEffect(() => {
+    const showConfiguredApplications = () => {
+      // Convert APPLICATION_CONFIGS to Application objects for display
+      const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
+        id: appConfig.id,
+        name: appConfig.name,
+        description: appConfig.description,
+        pipelines: [], // Empty for now, will be populated when connected
+        lastUpdated: new Date().toISOString(),
+        overallHealth: 'warning' as const
+      }));
+      
+      setApplications(configuredApps);
+      if (configuredApps.length > 0) {
+        setSelectedApplication(configuredApps[0]);
+      }
+    };
+    
+    showConfiguredApplications();
+  }, []);
+
   const initializeService = (config: AzureDevOpsConfig) => {
     try {
       // Validate the config
@@ -67,7 +89,18 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
 
     try {
       if (!azureDevOpsService) {
-        throw new Error('Azure DevOps service not initialized. Please configure your connection first.');
+        // If no service, just show the configured applications
+        const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
+          id: appConfig.id,
+          name: appConfig.name,
+          description: appConfig.description,
+          pipelines: [], // Empty for now, will be populated when connected
+          lastUpdated: new Date().toISOString(),
+          overallHealth: 'warning' as const
+        }));
+        
+        setApplications(configuredApps);
+        return;
       }
 
       // Fetch all applications from configuration

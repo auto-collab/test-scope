@@ -1,9 +1,29 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useAzureDevOps } from '../contexts/azure-devops-context';
 
 export default function AzureDevOpsSetupGuide() {
   const [showGuide, setShowGuide] = useState(false);
+  const [showConfigForm, setShowConfigForm] = useState(false);
+  const [config, setConfig] = useState({
+    organization: '',
+    project: '',
+    personalAccessToken: ''
+  });
+  const { initializeService, refreshApplications, isLoading, error } = useAzureDevOps();
+
+  const handleConfigSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!config.organization || !config.project || !config.personalAccessToken) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
+    initializeService(config);
+    await refreshApplications();
+    setShowConfigForm(false);
+  };
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
