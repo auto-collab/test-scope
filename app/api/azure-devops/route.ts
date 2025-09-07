@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Use the provided endpoint or default to projects
     const apiEndpoint = endpoint || '/_apis/projects';
     const baseUrl = `https://dev.azure.com/${organization}`;
-    const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.1`;
+    const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.2`;
     
     console.log('=== AZURE DEVOPS API CALL ===');
     console.log('Organization:', organization);
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Basic ${Buffer.from(`:${personalAccessToken}`).toString('base64')}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
 
@@ -94,12 +95,13 @@ export async function POST(request: NextRequest) {
 // Example of how to make real Azure DevOps REST API calls
 async function fetchFromAzureDevOps(config: AzureDevOpsConfig, endpoint: string) {
   const baseUrl = `https://dev.azure.com/${config.organization}`;
-  const apiVersion = 'api-version=7.2-preview.1';
+  const apiVersion = 'api-version=7.2';
   
   const response = await fetch(`${baseUrl}${endpoint}?${apiVersion}`, {
     headers: {
       'Authorization': `Basic ${Buffer.from(`:${config.personalAccessToken}`).toString('base64')}`,
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     },
   });
 

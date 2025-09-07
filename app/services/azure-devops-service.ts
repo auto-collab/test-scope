@@ -33,12 +33,13 @@ export class AzureDevOpsService {
     return this.config;
   }
 
-  private async fetchFromAzureDevOps(endpoint: string): Promise<any> {
+  private async fetchFromAzureDevOps(endpoint: string, retryCount: number = 0): Promise<any> {
     console.log('Service calling API route with:', { 
       organization: this.config.organization, 
       project: this.config.project, 
       endpoint,
-      hasToken: !!this.config.personalAccessToken 
+      hasToken: !!this.config.personalAccessToken,
+      retryCount
     });
     
     const requestBody = {
@@ -48,35 +49,66 @@ export class AzureDevOpsService {
     
     console.log('Service sending request body:', JSON.stringify(requestBody, null, 2));
     
-    // Add a small delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Add a small delay to avoid rate limiting (exponential backoff for retries)
+    const delay = Math.min(100 * Math.pow(2, retryCount), 2000); // Max 2 seconds
+    await new Promise(resolve => setTimeout(resolve, delay));
     
-    // Use server-side API route instead of direct client-side calls
-    const response = await fetch('/api/azure-devops', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
-    });
+    try {
+      // Use server-side API route instead of direct client-side calls
+      const response = await fetch('/api/azure-devops', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-    console.log('Service received response:', { 
-      status: response.status, 
-      ok: response.ok 
-    });
+      console.log('Service received response:', { 
+        status: response.status, 
+        ok: response.ok,
+        statusText: response.statusText
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Service API error response:', errorText);
-      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
+      // Handle different HTTP status codes as per Azure DevOps API docs
+      if (response.status === 401) {
+        throw new Error('Unauthorized: Invalid or expired Personal Access Token');
+      } else if (response.status === 403) {
+        throw new Error('Forbidden: Insufficient permissions for this resource');
+      } else if (response.status === 404) {
+        throw new Error('Not Found: The requested resource does not exist');
+      } else if (response.status === 429) {
+        // Rate limiting - retry with exponential backoff
+        if (retryCount < 3) {
+          console.log(`Rate limited, retrying in ${delay * 2}ms...`);
+          return this.fetchFromAzureDevOps(endpoint, retryCount + 1);
+        } else {
+          throw new Error('Rate limited: Too many requests, please try again later');
+        }
+      } else if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Service API error response:', errorText);
+        throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Service received data:', { 
+        hasValue: !!data.value, 
+        valueLength: data.value?.length || 0 
+      });
+      return data;
+      
+    } catch (error) {
+      // Retry on network errors or 5xx server errors
+      if (retryCount < 3 && (
+        error instanceof TypeError || // Network error
+        (error instanceof Error && error.message.includes('5')) // 5xx errors
+      )) {
+        console.log(`Network/server error, retrying in ${delay * 2}ms...`);
+        return this.fetchFromAzureDevOps(endpoint, retryCount + 1);
+      }
+      
+      throw error;
     }
-
-    const data = await response.json();
-    console.log('Service received data:', { 
-      hasValue: !!data.value, 
-      valueLength: data.value?.length || 0 
-    });
-    return data;
   }
 
   // Removed getBuildDefinitions to avoid rate limiting - we now search for specific pipelines only
@@ -84,20 +116,103 @@ export class AzureDevOpsService {
   async findBuildDefinitionByName(projectId: string, pipelineName: string): Promise<any | null> {
     console.log(`Searching for pipeline: "${pipelineName}" in project: ${projectId}`);
     
-    // Use a more targeted search to avoid rate limiting
-    const endpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}`;
-    const response = await this.fetchFromAzureDevOps(endpoint);
-    const definitions = response.value || [];
-    
-    const found = definitions.find(def => def.name === pipelineName);
-    
-    if (found) {
-      console.log(`✅ Found pipeline: "${found.name}" (ID: ${found.id})`);
-    } else {
-      console.log(`❌ Pipeline "${pipelineName}" not found.`);
+    try {
+      // First try the targeted search with name parameter (most efficient)
+      console.log(`Trying targeted search for: "${pipelineName}"`);
+      const targetedEndpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}`;
+      const targetedResponse = await this.fetchFromAzureDevOps(targetedEndpoint);
+      const targetedDefinitions = targetedResponse.value || [];
+      
+      console.log(`Targeted search returned ${targetedDefinitions.length} definitions`);
+      
+      // Try exact match in targeted results first
+      let found = targetedDefinitions.find(def => def.name === pipelineName);
+      
+      if (found) {
+        console.log(`✅ Found exact match via targeted search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      // Try case-insensitive match in targeted results
+      found = targetedDefinitions.find(def => def.name.toLowerCase() === pipelineName.toLowerCase());
+      
+      if (found) {
+        console.log(`✅ Found case-insensitive match via targeted search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      // If targeted search returned some results, try partial matching on those
+      if (targetedDefinitions.length > 0) {
+        found = targetedDefinitions.find(def => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
+        
+        if (found) {
+          console.log(`✅ Found partial match via targeted search: "${found.name}" (ID: ${found.id})`);
+          return found;
+        }
+      }
+      
+      // Only if targeted search failed completely, fall back to getting all definitions
+      console.log(`Targeted search failed, falling back to comprehensive search...`);
+      const allEndpoint = `/${projectId}/_apis/build/definitions`;
+      const allResponse = await this.fetchFromAzureDevOps(allEndpoint);
+      const allDefinitions = allResponse.value || [];
+      
+      console.log(`Comprehensive search returned ${allDefinitions.length} total definitions`);
+      
+      // Log all available pipeline names for debugging (only if we had to do comprehensive search)
+      if (allDefinitions.length <= 20) { // Only log if reasonable number
+        console.log('Available pipeline names:');
+        allDefinitions.forEach((def, index) => {
+          console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
+        });
+      } else {
+        console.log(`Found ${allDefinitions.length} pipelines (too many to list individually)`);
+      }
+      
+      // Try exact match in all definitions
+      found = allDefinitions.find(def => def.name === pipelineName);
+      
+      if (found) {
+        console.log(`✅ Found exact match in comprehensive search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      // Try case-insensitive match in all definitions
+      found = allDefinitions.find(def => def.name.toLowerCase() === pipelineName.toLowerCase());
+      
+      if (found) {
+        console.log(`✅ Found case-insensitive match in comprehensive search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      // Try partial match in all definitions
+      found = allDefinitions.find(def => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
+      
+      if (found) {
+        console.log(`✅ Found partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      // Try reverse partial match
+      found = allDefinitions.find(def => pipelineName.toLowerCase().includes(def.name.toLowerCase()));
+      
+      if (found) {
+        console.log(`✅ Found reverse partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
+        return found;
+      }
+      
+      console.log(`❌ Pipeline "${pipelineName}" not found in any search method.`);
+      if (allDefinitions.length <= 50) { // Only show names if reasonable number
+        console.log(`Available pipeline names: ${allDefinitions.map(d => d.name).join(', ')}`);
+      } else {
+        console.log(`Found ${allDefinitions.length} total pipelines - too many to list names`);
+      }
+      return null;
+      
+    } catch (error) {
+      console.error(`Error searching for pipeline "${pipelineName}":`, error);
+      return null;
     }
-    
-    return found || null;
   }
 
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
@@ -128,7 +243,8 @@ export class AzureDevOpsService {
 
   async getCodeCoverage(projectId: string, buildId: number): Promise<any> {
     try {
-      const endpoint = `/${projectId}/_apis/test/CodeCoverage?buildId=${buildId}`;
+      // Use the correct Azure DevOps API endpoint for code coverage
+      const endpoint = `/${projectId}/_apis/build/builds/${buildId}/coverage`;
       const response = await this.fetchFromAzureDevOps(endpoint);
       
       console.log(`Code coverage data for build ${buildId}:`, {

@@ -132,11 +132,12 @@ describe('/api/azure-devops', () => {
     await POST(mockRequest);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://dev.azure.com/test-org/_apis/projects?api-version=7.2-preview.1',
+      'https://dev.azure.com/test-org/_apis/projects?api-version=7.2',
       expect.objectContaining({
         headers: expect.objectContaining({
           'Authorization': expect.stringContaining('Basic'),
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         })
       })
     );
