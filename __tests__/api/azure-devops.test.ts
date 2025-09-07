@@ -134,12 +134,41 @@ describe('/api/azure-devops', () => {
       })
     );
 
-    expect(mockJson).toHaveBeenCalledWith(mockAzureResponse);
+    expect(mockJson).toHaveBeenCalledWith(mockAzureResponse, undefined);
   });
 
   it('handles JSON parsing errors', async () => {
     const mockRequest = {
       json: jest.fn().mockRejectedValue(new Error('Invalid JSON'))
+    } as unknown as NextRequest;
+
+    // Mock console.error to avoid noise in test output
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    await POST(mockRequest);
+
+    expect(mockJson).toHaveBeenCalledWith(
+      { error: 'Failed to connect to Azure DevOps' },
+      { status: 500 }
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith('Azure DevOps API error:', expect.any(Error));
+    consoleSpy.mockRestore();
+  });
+
+  it('handles Azure DevOps API errors', async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized'
+    });
+
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
+        organization: 'test-org',
+        project: 'test-project',
+        personalAccessToken: 'invalid-token'
+      })
     } as unknown as NextRequest;
 
     // Mock console.error to avoid noise in test output
@@ -210,7 +239,24 @@ describe('/api/azure-devops', () => {
     );
   });
 
-  it('returns correct project structure in mock data', async () => {
+  it('returns correct project structure from Azure DevOps', async () => {
+    const mockAzureResponse = {
+      value: [
+        {
+          id: 'test-project-id',
+          name: 'Test Project',
+          description: 'A test project from Azure DevOps',
+          state: 'wellFormed',
+          visibility: 'private'
+        }
+      ]
+    };
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue(mockAzureResponse)
+    });
+
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
@@ -222,12 +268,12 @@ describe('/api/azure-devops', () => {
     await POST(mockRequest);
 
     const callArgs = mockJson.mock.calls[0][0];
-    expect(callArgs).toHaveProperty('projects');
-    expect(Array.isArray(callArgs.projects)).toBe(true);
-    expect(callArgs.projects).toHaveLength(3);
+    expect(callArgs).toHaveProperty('value');
+    expect(Array.isArray(callArgs.value)).toBe(true);
+    expect(callArgs.value).toHaveLength(1);
 
     // Check structure of first project
-    const firstProject = callArgs.projects[0];
+    const firstProject = callArgs.value[0];
     expect(firstProject).toHaveProperty('id');
     expect(firstProject).toHaveProperty('name');
     expect(firstProject).toHaveProperty('description');
@@ -242,6 +288,22 @@ describe('/api/azure-devops', () => {
   });
 
   it('handles request with extra fields gracefully', async () => {
+    const mockAzureResponse = {
+      value: [
+        {
+          id: 'test-project-id',
+          name: 'Test Project',
+          state: 'wellFormed',
+          visibility: 'private'
+        }
+      ]
+    };
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue(mockAzureResponse)
+    });
+
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
@@ -254,13 +316,34 @@ describe('/api/azure-devops', () => {
 
     await POST(mockRequest);
 
-    // Should still return mock data successfully
+    // Should still return Azure DevOps data successfully
     const callArgs = mockJson.mock.calls[0][0];
-    expect(callArgs).toHaveProperty('projects');
-    expect(callArgs.projects).toHaveLength(3);
+    expect(callArgs).toHaveProperty('value');
+    expect(callArgs.value).toHaveLength(1);
   });
 
-  it('returns consistent mock data across calls', async () => {
+  it('returns consistent Azure DevOps data across calls', async () => {
+    const mockAzureResponse = {
+      value: [
+        {
+          id: 'test-project-id',
+          name: 'Test Project',
+          state: 'wellFormed',
+          visibility: 'private'
+        }
+      ]
+    };
+
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockAzureResponse)
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockAzureResponse)
+      });
+
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
