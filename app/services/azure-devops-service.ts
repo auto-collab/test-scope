@@ -125,6 +125,14 @@ export class AzureDevOpsService {
       
       console.log(`Targeted search returned ${targetedDefinitions.length} definitions`);
       
+      // Log what we got back for debugging
+      if (targetedDefinitions.length > 0) {
+        console.log('Targeted search results:');
+        targetedDefinitions.forEach((def: any, index: number) => {
+          console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
+        });
+      }
+      
       // Try exact match in targeted results first
       let found = targetedDefinitions.find((def: any) => def.name === pipelineName);
       
