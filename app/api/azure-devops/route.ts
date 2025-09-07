@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Use the provided endpoint or default to projects
     const apiEndpoint = endpoint || '/_apis/projects';
     const baseUrl = `https://dev.azure.com/${organization}`;
-    const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.2-preview.1`;
+    const fullUrl = `${baseUrl}${apiEndpoint}?api-version=7.1`;
     
     console.log('=== AZURE DEVOPS API CALL ===');
     console.log('Organization:', organization);
