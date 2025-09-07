@@ -50,8 +50,8 @@ export async function POST(request: NextRequest) {
     const apiEndpoint = endpoint || '/_apis/projects';
     const baseUrl = `https://dev.azure.com/${organization}`;
     
-    // Use 7.1 for build definitions (more stable), 7.2 for others
-    const apiVersion = apiEndpoint.includes('/_apis/build/definitions') ? '7.1' : '7.2';
+    // Use 7.2 for all endpoints
+    const apiVersion = '7.2';
     const fullUrl = `${baseUrl}${apiEndpoint}?api-version=${apiVersion}`;
     
     console.log('=== AZURE DEVOPS API CALL ===');

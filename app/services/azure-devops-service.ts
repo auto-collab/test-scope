@@ -119,7 +119,7 @@ export class AzureDevOpsService {
     try {
       // First try the targeted search with name parameter (most efficient)
       console.log(`Trying targeted search for: "${pipelineName}"`);
-      const targetedEndpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}`;
+      const targetedEndpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}&api-version=7.2-preview.1`;
       const targetedResponse = await this.fetchFromAzureDevOps(targetedEndpoint);
       const targetedDefinitions = targetedResponse.value || [];
       
@@ -161,7 +161,7 @@ export class AzureDevOpsService {
       
       // Only if targeted search failed completely, fall back to getting all definitions
       console.log(`Targeted search failed, falling back to comprehensive search...`);
-      const allEndpoint = `/${projectId}/_apis/build/definitions`;
+      const allEndpoint = `/${projectId}/_apis/build/definitions?api-version=7.2-preview.1`;
       const allResponse = await this.fetchFromAzureDevOps(allEndpoint);
       const allDefinitions = allResponse.value || [];
       
