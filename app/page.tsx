@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAzureDevOps } from './contexts/azure-devops-context';
 import ProjectSelector from './components/project-selector';
 import TestScopeDashboard from './components/test-scope-dashboard';
 import AzureDevOpsSetupGuide from './components/azure-devops-setup-guide';
 
 export default function Dashboard() {
+  const [mounted, setMounted] = useState(false);
   const { 
     applications, 
     selectedApplication, 
@@ -14,6 +15,18 @@ export default function Dashboard() {
     isLoading, 
     error 
   } = useAzureDevOps();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const handleApplicationSelect = (selectedOption: any) => {
     const app = applications.find(a => a.id === selectedOption?.value);
