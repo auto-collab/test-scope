@@ -15,12 +15,18 @@ export class AzureDevOpsService {
   private headers: HeadersInit;
 
   constructor(config: AzureDevOpsConfig) {
+    console.log('AzureDevOpsService constructor called with:', {
+      organization: config.organization,
+      project: config.project,
+      hasToken: !!config.personalAccessToken
+    });
     this.config = config;
     this.baseUrl = `https://dev.azure.com/${config.organization}`;
     this.headers = {
       'Authorization': `Basic ${Buffer.from(`:${config.personalAccessToken}`).toString('base64')}`,
       'Content-Type': 'application/json',
     };
+    console.log('AzureDevOpsService initialized with baseUrl:', this.baseUrl);
   }
 
   getConfig(): AzureDevOpsConfig {
@@ -171,6 +177,7 @@ export class AzureDevOpsService {
   }
 
   async fetchPipelineData(appConfig: ApplicationConfig, pipelineConfig: PipelineConfig): Promise<PipelineSummary> {
+    console.log(`fetchPipelineData called for pipeline: ${pipelineConfig.name} in project: ${appConfig.projectId}`);
     try {
       // First, find the build definition by name
       const buildDefinition = await this.findBuildDefinitionByName(appConfig.projectId, pipelineConfig.name);
@@ -257,6 +264,7 @@ export class AzureDevOpsService {
   }
 
   async fetchApplicationData(appConfig: ApplicationConfig): Promise<Application> {
+    console.log(`fetchApplicationData called for: ${appConfig.name}`);
     try {
       // Fetch all pipeline data in parallel
       const pipelinePromises = appConfig.pipelines.map(pipelineConfig => 

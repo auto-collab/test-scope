@@ -78,8 +78,11 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
           hasToken: !!config.personalAccessToken 
         });
         
+        console.log('Calling initializeService...');
         initializeService(config);
+        console.log('Calling refreshApplications...');
         await refreshApplications();
+        console.log('refreshApplications completed');
       } else {
         console.log('No environment variables found, showing configured apps only');
       }
@@ -89,9 +92,15 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   }, []);
 
   const initializeService = (config: AzureDevOpsConfig) => {
+    console.log('initializeService called with config:', config);
     try {
       // Validate the config
       if (!config.organization || !config.project || !config.personalAccessToken) {
+        console.error('Missing required Azure DevOps configuration:', {
+          hasOrg: !!config.organization,
+          hasProject: !!config.project,
+          hasToken: !!config.personalAccessToken
+        });
         throw new Error('Missing required Azure DevOps configuration');
       }
       
@@ -121,11 +130,13 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   };
 
   const refreshApplications = async () => {
+    console.log('refreshApplications called');
     setIsLoading(true);
     setError(null);
 
     try {
       if (!azureDevOpsService) {
+        console.log('No Azure DevOps service available, showing configured apps only');
         // If no service, just show the configured applications
         const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
           id: appConfig.id,
@@ -139,6 +150,8 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
         setApplications(configuredApps);
         return;
       }
+
+      console.log('Azure DevOps service available, fetching real data...');
 
       // Fetch all applications from configuration, using the real project ID from the service
       const realProjectId = azureDevOpsService.getConfig().project;
