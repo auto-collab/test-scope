@@ -36,6 +36,11 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [error, setError] = useState<string | null>(null);
   const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
 
+  // Debug: Watch for service state changes
+  useEffect(() => {
+    console.log('Azure DevOps service state changed:', azureDevOpsService ? 'SERVICE AVAILABLE' : 'NO SERVICE');
+  }, [azureDevOpsService]);
+
   // Show configured applications immediately, then try to auto-connect
   useEffect(() => {
     const initializeFromEnv = async () => {
@@ -80,9 +85,13 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
         
         console.log('Calling initializeService...');
         initializeService(config);
-        console.log('Calling refreshApplications...');
-        await refreshApplications();
-        console.log('refreshApplications completed');
+        console.log('Waiting for service to be set...');
+        // Wait a bit for the service state to be updated
+        setTimeout(async () => {
+          console.log('Calling refreshApplications...');
+          await refreshApplications();
+          console.log('refreshApplications completed');
+        }, 100);
       } else {
         console.log('No environment variables found, showing configured apps only');
       }
@@ -107,8 +116,9 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       // Create the Azure DevOps service
       console.log('Creating Azure DevOps service with config:', config);
       const service = new AzureDevOpsService(config);
+      console.log('Service instance created:', service);
       setAzureDevOpsService(service);
-      console.log('Service created successfully');
+      console.log('Service state set, current service:', azureDevOpsService);
       
       // Validate application configurations (only warn if we don't have env vars)
       const validation = validateApplicationConfigs();
@@ -125,6 +135,7 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       
       setError(null);
     } catch (err) {
+      console.error('Error in initializeService:', err);
       setError(err instanceof Error ? err.message : 'Failed to initialize Azure DevOps service');
     }
   };
