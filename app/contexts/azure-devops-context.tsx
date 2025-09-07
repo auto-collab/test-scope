@@ -36,9 +36,15 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [error, setError] = useState<string | null>(null);
   const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
 
-  // Debug: Watch for service state changes
+  // Debug: Watch for service state changes and auto-refresh when service becomes available
   useEffect(() => {
     console.log('Azure DevOps service state changed:', azureDevOpsService ? 'SERVICE AVAILABLE' : 'NO SERVICE');
+    
+    // If service becomes available and we have applications configured, refresh them
+    if (azureDevOpsService && applications.length > 0 && applications[0].pipelines.length === 0) {
+      console.log('Service became available, refreshing applications...');
+      refreshApplications();
+    }
   }, [azureDevOpsService]);
 
   // Show configured applications immediately, then try to auto-connect
@@ -85,13 +91,7 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
         
         console.log('Calling initializeService...');
         initializeService(config);
-        console.log('Waiting for service to be set...');
-        // Wait a bit for the service state to be updated
-        setTimeout(async () => {
-          console.log('Calling refreshApplications...');
-          await refreshApplications();
-          console.log('refreshApplications completed');
-        }, 100);
+        console.log('Service initialization started, will auto-refresh when service is ready');
       } else {
         console.log('No environment variables found, showing configured apps only');
       }
