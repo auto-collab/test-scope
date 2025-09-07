@@ -7,7 +7,25 @@ const mockNextResponse = {
   json: mockJson,
 };
 
-// Mock fetch for Azure DevOps API calls
+// Mock the Azure DevOps SDK
+jest.mock('azure-devops-node-api', () => ({
+  getPersonalAccessTokenHandler: jest.fn(() => 'mock-auth-handler'),
+  WebApi: jest.fn().mockImplementation(() => ({
+    getCoreApi: jest.fn().mockResolvedValue({
+      getProjects: jest.fn().mockResolvedValue({ value: [] })
+    }),
+    getBuildApi: jest.fn().mockResolvedValue({
+      getDefinitions: jest.fn().mockResolvedValue({ value: [] }),
+      getBuilds: jest.fn().mockResolvedValue({ value: [] })
+    }),
+    getTestApi: jest.fn().mockResolvedValue({
+      getTestRuns: jest.fn().mockResolvedValue({ value: [] }),
+      getTestResults: jest.fn().mockResolvedValue({ value: [] })
+    })
+  }))
+}));
+
+// Mock fetch for fallback calls
 global.fetch = jest.fn();
 
 jest.mock('next/server', () => ({
@@ -42,18 +60,13 @@ describe('/api/azure-devops', () => {
     );
   });
 
-  it('returns 400 for missing project', async () => {
-    // Mock fetch to return a successful response
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ value: [] })
-    });
-
+  it('succeeds for missing project when getting projects', async () => {
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
         project: '',
-        personalAccessToken: 'test-token'
+        personalAccessToken: 'test-token',
+        endpoint: '/_apis/projects'
       })
     } as unknown as NextRequest;
 
@@ -116,32 +129,27 @@ describe('/api/azure-devops', () => {
       ]
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: jest.fn().mockResolvedValue(mockAzureResponse)
-    });
+    // Mock the SDK to return our test data
+    const azdev = require('azure-devops-node-api');
+    const mockCoreApi = {
+      getProjects: jest.fn().mockResolvedValue(mockAzureResponse)
+    };
+    azdev.WebApi.mockImplementation(() => ({
+      getCoreApi: jest.fn().mockResolvedValue(mockCoreApi)
+    }));
 
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
         project: 'test-project',
-        personalAccessToken: 'test-token'
+        personalAccessToken: 'test-token',
+        endpoint: '/_apis/projects'
       })
     } as unknown as NextRequest;
 
     await POST(mockRequest);
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      'https://dev.azure.com/test-org/_apis/projects?api-version=7.2',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'Authorization': expect.stringContaining('Basic'),
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        })
-      })
-    );
-
+    expect(mockCoreApi.getProjects).toHaveBeenCalled();
     expect(mockJson).toHaveBeenCalledWith(mockAzureResponse, undefined);
   });
 
@@ -160,7 +168,7 @@ describe('/api/azure-devops', () => {
       { status: 500 }
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith('Azure DevOps API error:', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('Azure DevOps SDK error:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 
@@ -189,7 +197,7 @@ describe('/api/azure-devops', () => {
       { status: 500 }
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith('Azure DevOps API error:', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('Azure DevOps SDK error:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 
@@ -260,16 +268,21 @@ describe('/api/azure-devops', () => {
       ]
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: jest.fn().mockResolvedValue(mockAzureResponse)
-    });
+    // Mock the SDK to return our test data
+    const azdev = require('azure-devops-node-api');
+    const mockCoreApi = {
+      getProjects: jest.fn().mockResolvedValue(mockAzureResponse)
+    };
+    azdev.WebApi.mockImplementation(() => ({
+      getCoreApi: jest.fn().mockResolvedValue(mockCoreApi)
+    }));
 
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
         project: 'test-project',
-        personalAccessToken: 'test-token'
+        personalAccessToken: 'test-token',
+        endpoint: '/_apis/projects'
       })
     } as unknown as NextRequest;
 
@@ -307,16 +320,21 @@ describe('/api/azure-devops', () => {
       ]
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: jest.fn().mockResolvedValue(mockAzureResponse)
-    });
+    // Mock the SDK to return our test data
+    const azdev = require('azure-devops-node-api');
+    const mockCoreApi = {
+      getProjects: jest.fn().mockResolvedValue(mockAzureResponse)
+    };
+    azdev.WebApi.mockImplementation(() => ({
+      getCoreApi: jest.fn().mockResolvedValue(mockCoreApi)
+    }));
 
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
         project: 'test-project',
         personalAccessToken: 'test-token',
+        endpoint: '/_apis/projects',
         extraField: 'should-be-ignored',
         anotherField: 123
       })
@@ -342,21 +360,21 @@ describe('/api/azure-devops', () => {
       ]
     };
 
-    (global.fetch as jest.Mock)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockAzureResponse)
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockAzureResponse)
-      });
+    // Mock the SDK to return consistent data
+    const azdev = require('azure-devops-node-api');
+    const mockCoreApi = {
+      getProjects: jest.fn().mockResolvedValue(mockAzureResponse)
+    };
+    azdev.WebApi.mockImplementation(() => ({
+      getCoreApi: jest.fn().mockResolvedValue(mockCoreApi)
+    }));
 
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
         project: 'test-project',
-        personalAccessToken: 'test-token'
+        personalAccessToken: 'test-token',
+        endpoint: '/_apis/projects'
       })
     } as unknown as NextRequest;
 

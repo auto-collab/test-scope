@@ -33,18 +33,21 @@ export class AzureDevOpsService {
     return this.config;
   }
 
-  private async fetchFromAzureDevOps(endpoint: string, retryCount: number = 0): Promise<any> {
+  private async fetchFromAzureDevOps(endpoint: string, method: string = 'GET', parameters?: Record<string, unknown>, retryCount: number = 0): Promise<unknown> {
     console.log('Service calling API route with:', { 
       organization: this.config.organization, 
       project: this.config.project, 
       endpoint,
+      method,
       hasToken: !!this.config.personalAccessToken,
       retryCount
     });
     
     const requestBody = {
       ...this.config,
-      endpoint: endpoint
+      endpoint: endpoint,
+      method: method,
+      parameters: parameters
     };
     
     console.log('Service sending request body:', JSON.stringify(requestBody, null, 2));
@@ -80,7 +83,7 @@ export class AzureDevOpsService {
         // Rate limiting - retry with exponential backoff
         if (retryCount < 3) {
           console.log(`Rate limited, retrying in ${delay * 2}ms...`);
-          return this.fetchFromAzureDevOps(endpoint, retryCount + 1);
+          return this.fetchFromAzureDevOps(endpoint, method, parameters, retryCount + 1);
         } else {
           throw new Error('Rate limited: Too many requests, please try again later');
         }
@@ -104,22 +107,54 @@ export class AzureDevOpsService {
         (error instanceof Error && error.message.includes('5')) // 5xx errors
       )) {
         console.log(`Network/server error, retrying in ${delay * 2}ms...`);
-        return this.fetchFromAzureDevOps(endpoint, retryCount + 1);
+        return this.fetchFromAzureDevOps(endpoint, method, parameters, retryCount + 1);
       }
       
       throw error;
     }
   }
 
-  // No longer need to search for build definitions - we use definition IDs directly
+  // New methods using the Azure DevOps SDK
+  
+  async getProjects(): Promise<unknown[]> {
+    const endpoint = '/_apis/projects';
+    const response = await this.fetchFromAzureDevOps(endpoint) as { value?: unknown[] };
+    const projects = response.value || [];
+    
+    console.log(`Found ${projects.length} projects:`);
+    projects.forEach((project: unknown, index: number) => {
+      const p = project as { name?: string; id?: string; state?: string };
+      console.log(`  ${index + 1}. Project ${p.name} (${p.id}) - State: ${p.state}`);
+    });
+    
+    return projects;
+  }
+
+  async getBuildDefinitions(projectId: string): Promise<unknown[]> {
+    const endpoint = `/${projectId}/_apis/build/definitions`;
+    const response = await this.fetchFromAzureDevOps(endpoint) as { value?: unknown[] };
+    const definitions = response.value || [];
+    
+    console.log(`Found ${definitions.length} build definitions for project ${projectId}:`);
+    definitions.forEach((def: unknown, index: number) => {
+      const d = def as { name?: string; id?: number; type?: string };
+      console.log(`  ${index + 1}. Definition ${d.name} (${d.id}) - Type: ${d.type}`);
+    });
+    
+    return definitions;
+  }
 
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
-    const endpoint = `/${projectId}/_apis/build/builds?definitions=${definitionId}&$top=${maxBuilds}`;
-    const response = await this.fetchFromAzureDevOps(endpoint);
+    const endpoint = `/${projectId}/_apis/build/builds`;
+    const parameters = {
+      definitionId: definitionId,
+      maxBuilds: maxBuilds
+    };
+    const response = await this.fetchFromAzureDevOps(endpoint, 'GET', parameters) as { value?: Build[] };
     const builds = response.value || [];
     
     console.log(`Found ${builds.length} builds for definition ${definitionId}:`);
-    builds.forEach((build: any, index: number) => {
+    builds.forEach((build: Build, index: number) => {
       console.log(`  ${index + 1}. Build ${build.id} - Status: ${build.status}, Result: ${build.result}`);
     });
     
@@ -127,23 +162,26 @@ export class AzureDevOpsService {
   }
 
   async getTestRuns(projectId: string, buildId: number): Promise<TestRun[]> {
-    const endpoint = `/${projectId}/_apis/test/runs?buildIds=${buildId}`;
-    const response = await this.fetchFromAzureDevOps(endpoint);
+    const endpoint = `/${projectId}/_apis/test/runs`;
+    const parameters = {
+      buildId: buildId
+    };
+    const response = await this.fetchFromAzureDevOps(endpoint, 'GET', parameters) as { value?: TestRun[] };
     const testRuns = response.value || [];
     
     console.log(`Found ${testRuns.length} test runs for build ${buildId}:`);
-    testRuns.forEach((run: any, index: number) => {
+    testRuns.forEach((run: TestRun, index: number) => {
       console.log(`  ${index + 1}. Test Run ${run.id} - State: ${run.state}, Statistics: ${run.runStatistics?.length || 0} stats`);
     });
     
     return testRuns;
   }
 
-  async getCodeCoverage(projectId: string, buildId: number): Promise<any> {
+  async getCodeCoverage(projectId: string, buildId: number): Promise<unknown> {
     try {
       // Use the correct Azure DevOps API endpoint for code coverage
       const endpoint = `/${projectId}/_apis/build/builds/${buildId}/coverage`;
-      const response = await this.fetchFromAzureDevOps(endpoint);
+      const response = await this.fetchFromAzureDevOps(endpoint) as { coverageData?: unknown[]; lastError?: string };
       
       console.log(`Code coverage data for build ${buildId}:`, {
         hasCoverageData: !!response.coverageData,
@@ -208,26 +246,28 @@ export class AzureDevOpsService {
     return summary;
   }
 
-  private parseCodeCoverage(coverageData: any): CodeCoverageSummary | undefined {
-    if (!coverageData?.coverageData?.length) {
+  private parseCodeCoverage(coverageData: unknown): CodeCoverageSummary | undefined {
+    const data = coverageData as { coverageData?: Array<{ coverageStats?: Array<{ label: string; covered: number; total: number }> }>; lastError?: string };
+    
+    if (!data?.coverageData?.length) {
       console.log('No coverage data available');
       return undefined;
     }
 
     console.log('Parsing code coverage data:', {
-      coverageDataLength: coverageData.coverageData.length,
-      hasError: !!coverageData.lastError
+      coverageDataLength: data.coverageData.length,
+      hasError: !!data.lastError
     });
 
     try {
-      const coverage = coverageData.coverageData[0];
+      const coverage = data.coverageData[0];
       const stats = coverage.coverageStats || [];
 
-      console.log(`Found ${stats.length} coverage statistics:`, stats.map((s: any) => `${s.label}: ${s.covered}/${s.total}`));
+      console.log(`Found ${stats.length} coverage statistics:`, stats.map((s) => `${s.label}: ${s.covered}/${s.total}`));
 
-      const lineCoverage = stats.find((s: any) => s.label === 'Lines');
-      const branchCoverage = stats.find((s: any) => s.label === 'Branches');
-      const functionCoverage = stats.find((s: any) => s.label === 'Functions');
+      const lineCoverage = stats.find((s) => s.label === 'Lines');
+      const branchCoverage = stats.find((s) => s.label === 'Branches');
+      const functionCoverage = stats.find((s) => s.label === 'Functions');
 
       if (!lineCoverage) {
         console.log('No line coverage data found');

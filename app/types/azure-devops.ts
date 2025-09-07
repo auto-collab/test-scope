@@ -1,10 +1,35 @@
 // Azure DevOps API Type Definitions
 // These interfaces model the data structures returned by Azure DevOps REST API
+// Enhanced to work with the official azure-devops-node-api SDK
 
 export interface AzureDevOpsConfig {
   organization: string;
   project: string;
   personalAccessToken: string;
+}
+
+// Enhanced configuration for SDK usage
+export interface AzureDevOpsSDKConfig extends AzureDevOpsConfig {
+  apiVersion?: string;
+  timeout?: number;
+  retryCount?: number;
+}
+
+// API Request/Response types for the new SDK-based approach
+export interface ApiRequest {
+  organization: string;
+  project: string;
+  personalAccessToken: string;
+  endpoint: string;
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  parameters?: Record<string, unknown>;
+}
+
+export interface ApiResponse<T = unknown> {
+  value?: T[];
+  count?: number;
+  data?: T;
+  error?: string;
 }
 
 export interface Project {
@@ -13,6 +38,16 @@ export interface Project {
   description?: string;
   state: 'wellFormed' | 'createPending' | 'deleted' | 'new' | 'all';
   visibility: 'private' | 'public';
+  url?: string;
+  lastUpdateTime?: string;
+  capabilities?: Record<string, unknown>;
+  defaultTeam?: TeamReference;
+}
+
+export interface TeamReference {
+  id: string;
+  name: string;
+  url: string;
 }
 
 export interface BuildDefinition {
@@ -23,7 +58,7 @@ export interface BuildDefinition {
   quality: 'definition' | 'draft';
   queueStatus: 'enabled' | 'paused' | 'disabled';
   buildNumberFormat?: string;
-  process?: any; // Process definition varies by type
+  process?: Record<string, unknown>; // Process definition varies by type
   repository?: Repository;
   triggers?: BuildTrigger[];
 }
@@ -68,11 +103,11 @@ export interface Build {
   plans?: TaskOrchestrationPlanReference[];
   timeline?: TimelineReference;
   artifacts?: BuildArtifact[];
-  _links?: any;
-  properties?: any;
+  _links?: Record<string, unknown>;
+  properties?: Record<string, unknown>;
   tags: string[];
   triggeredBy?: BuildTrigger;
-  triggerInfo?: any;
+  triggerInfo?: Record<string, unknown>;
   validationResults?: BuildRequestValidationResult[];
 }
 
@@ -120,7 +155,7 @@ export interface BuildArtifact {
 export interface ArtifactResource {
   data: string;
   downloadUrl: string;
-  properties?: any;
+  properties?: Record<string, unknown>;
   type: string;
   url: string;
 }
@@ -195,13 +230,13 @@ export interface BuildConfiguration {
   keepForever: boolean;
   retainIndefinitely: boolean;
   triggeredBy?: BuildTrigger;
-  triggerInfo?: any;
+  triggerInfo?: Record<string, unknown>;
   validationResults?: BuildRequestValidationResult[];
   plans?: TaskOrchestrationPlanReference[];
   timeline?: TimelineReference;
   artifacts?: BuildArtifact[];
-  _links?: any;
-  properties?: any;
+  _links?: Record<string, unknown>;
+  properties?: Record<string, unknown>;
   tags: string[];
   queue?: AgentPoolQueue;
   buildNumberRevision?: number;
@@ -224,24 +259,24 @@ export interface ReleaseReference {
   releaseDefinitionUri?: string;
   isDeleted?: boolean;
   artifacts?: ReleaseArtifact[];
-  variables?: any;
-  variableGroups?: any;
-  preDeployApprovals?: any;
-  postDeployApprovals?: any;
-  gates?: any;
-  environments?: any;
+  variables?: Record<string, unknown>;
+  variableGroups?: Record<string, unknown>;
+  preDeployApprovals?: Record<string, unknown>;
+  postDeployApprovals?: Record<string, unknown>;
+  gates?: Record<string, unknown>;
+  environments?: Record<string, unknown>;
   createdOn?: string;
   modifiedOn?: string;
   createdBy?: IdentityRef;
   modifiedBy?: IdentityRef;
   createdFor?: IdentityRef;
   projectReference?: ProjectReference;
-  _links?: any;
-  properties?: any;
+  _links?: Record<string, unknown>;
+  properties?: Record<string, unknown>;
   tags?: string[];
   releaseNameFormat?: string;
   keepForever?: boolean;
-  retentionPolicy?: any;
+  retentionPolicy?: Record<string, unknown>;
   releaseDefinitionRevision?: number;
 }
 
@@ -257,7 +292,7 @@ export interface ReleaseDefinitionReference {
   modifiedBy?: IdentityRef;
   modifiedOn?: string;
   isDeleted?: boolean;
-  variableGroups?: any;
+  variableGroups?: Record<string, unknown>;
   releaseDefinitionRevision?: number;
 }
 
@@ -265,7 +300,7 @@ export interface ReleaseArtifact {
   sourceId: string;
   type: string;
   alias?: string;
-  definitionReference?: any;
+  definitionReference?: Record<string, unknown>;
   isPrimary?: boolean;
   isRetained?: boolean;
 }
@@ -380,8 +415,8 @@ export interface TestResult {
   runBy?: IdentityRef;
   lastUpdatedBy?: IdentityRef;
   lastUpdatedDate?: string;
-  associatedBugs?: any[];
-  customFields?: any[];
+  associatedBugs?: unknown[];
+  customFields?: unknown[];
 }
 
 export interface TestResultsDetails {
@@ -389,4 +424,43 @@ export interface TestResultsDetails {
   totalCount: number;
   testAssembly: string;
   testContainer: string;
+}
+
+// Enhanced error handling types for SDK integration
+export interface AzureDevOpsError {
+  code: string;
+  message: string;
+  typeKey: string;
+  typeName: string;
+  innerException?: unknown;
+  stackTrace?: string;
+}
+
+export interface ApiErrorResponse {
+  error: AzureDevOpsError;
+  statusCode: number;
+  statusText: string;
+}
+
+// SDK-specific types for better integration
+export interface SDKConnectionConfig {
+  orgUrl: string;
+  authHandler: unknown; // azdev.getPersonalAccessTokenHandler result
+  connection: unknown; // azdev.WebApi instance
+}
+
+// Enhanced service method return types
+export interface ServiceResult<T> {
+  data?: T;
+  error?: string;
+  success: boolean;
+  timestamp: string;
+}
+
+// Rate limiting and retry configuration
+export interface RetryConfig {
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+  backoffMultiplier: number;
 }

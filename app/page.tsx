@@ -28,7 +28,7 @@ export default function Dashboard() {
     );
   }
 
-  const handleApplicationSelect = (selectedOption: any) => {
+  const handleApplicationSelect = (selectedOption: { value: string; label: string } | null) => {
     const app = applications.find(a => a.id === selectedOption?.value);
     setSelectedApplication(app || null);
   };

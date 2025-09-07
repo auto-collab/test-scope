@@ -12,7 +12,7 @@ interface ProjectSelectorProps {
 
 export default function ProjectSelector({ options, onSelect, isLoading }: ProjectSelectorProps) {
   const customStyles = {
-    control: (provided: any, state: any) => ({
+    control: (provided: Record<string, unknown>, state: { isFocused: boolean }) => ({
       ...provided,
       minHeight: '42px',
       border: state.isFocused ? '2px solid #3b82f6' : '1px solid #d1d5db',
@@ -21,11 +21,11 @@ export default function ProjectSelector({ options, onSelect, isLoading }: Projec
         border: '1px solid #9ca3af'
       }
     }),
-    placeholder: (provided: any) => ({
+    placeholder: (provided: Record<string, unknown>) => ({
       ...provided,
       color: '#9ca3af'
     }),
-    option: (provided: any, state: any) => ({
+    option: (provided: Record<string, unknown>, state: { isSelected: boolean; isFocused: boolean }) => ({
       ...provided,
       backgroundColor: state.isSelected 
         ? '#3b82f6' 
