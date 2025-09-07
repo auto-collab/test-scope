@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Application, AzureDevOpsConfig } from '../types/azure-devops';
+import { APPLICATION_CONFIGS, validateApplicationConfigs } from '../config/applications';
+import { AzureDevOpsService } from '../services/azure-devops-service';
 
 interface AzureDevOpsContextType {
   applications: Application[];
@@ -32,13 +34,27 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
 
   const initializeService = (config: AzureDevOpsConfig) => {
     try {
-      // For demo purposes, just validate the config
+      // Validate the config
       if (!config.organization || !config.project || !config.personalAccessToken) {
-        throw new Error('Invalid configuration');
+        throw new Error('Missing required Azure DevOps configuration');
       }
+      
+      // Create the Azure DevOps service
+      const service = new AzureDevOpsService(config);
+      setAzureDevOpsService(service);
+      
+      // Validate application configurations
+      const validation = validateApplicationConfigs();
+      if (!validation.valid) {
+        console.warn('Application configuration issues:', validation.errors);
+        setError(`Configuration issues: ${validation.errors.join(', ')}`);
+        return;
+      }
+      
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initialize Azure DevOps service');
@@ -50,404 +66,24 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
     setError(null);
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!azureDevOpsService) {
+        throw new Error('Azure DevOps service not initialized. Please configure your connection first.');
+      }
 
-      // Mock applications with realistic pipeline data
-      const mockApplications: Application[] = [
-        {
-          id: 'app1',
-          name: 'E-Commerce Platform',
-          description: 'Main e-commerce application with payment processing',
-          pipelines: [
-            {
-              id: 1,
-              name: 'CI/CD Pipeline',
-              type: 'build',
-              status: 'success',
-              lastRun: {
-                id: 12345,
-                buildNumber: '2024.1.15.1',
-                status: 'completed',
-                result: 'succeeded',
-                queueTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 2 * 60 * 60 * 1000 + 5 * 60 * 1000).toISOString(),
-                finishTime: new Date(Date.now() - 2 * 60 * 60 * 1000 + 15 * 60 * 1000).toISOString(),
-                sourceBranch: 'main',
-                sourceVersion: 'abc123def456',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 245,
-                passed: 238,
-                failed: 3,
-                skipped: 4,
-                passRate: 97.1,
-                duration: 12.5
-              },
-              codeCoverage: {
-                lineCoverage: 87.3,
-                branchCoverage: 82.1,
-                functionCoverage: 91.7,
-                totalLines: 15420,
-                coveredLines: 13452
-              },
-              qualityGates: [
-                { name: 'Code Coverage', status: 'passed', threshold: 80, actual: 87.3, unit: '%' },
-                { name: 'Test Pass Rate', status: 'passed', threshold: 95, actual: 97.1, unit: '%' },
-                { name: 'Build Time', status: 'passed', threshold: 20, actual: 15, unit: 'min' }
-              ],
-              detailedTestResults: [
-                {
-                  testAssembly: 'ECommerce.Tests.dll',
-                  testContainer: 'ECommerce.Tests.Unit',
-                  totalCount: 145,
-                  results: [
-                    {
-                      id: 1001,
-                      testCaseTitle: 'Should calculate total price correctly',
-                      automatedTestName: 'ECommerce.Tests.Unit.OrderTests.CalculateTotalPrice_ValidItems_ReturnsCorrectTotal',
-                      outcome: 'passed',
-                      state: 'completed',
-                      priority: 1,
-                      durationInMs: 45,
-                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 45).toISOString(),
-                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
-                    },
-                    {
-                      id: 1002,
-                      testCaseTitle: 'Should validate payment method',
-                      automatedTestName: 'ECommerce.Tests.Unit.PaymentTests.ValidatePaymentMethod_InvalidCard_ThrowsException',
-                      outcome: 'passed',
-                      state: 'completed',
-                      priority: 1,
-                      durationInMs: 32,
-                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 32).toISOString(),
-                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
-                    },
-                    {
-                      id: 1003,
-                      testCaseTitle: 'Should handle inventory updates',
-                      automatedTestName: 'ECommerce.Tests.Unit.InventoryTests.UpdateInventory_OutOfStock_UpdatesCorrectly',
-                      outcome: 'failed',
-                      state: 'completed',
-                      priority: 1,
-                      errorMessage: 'Expected inventory count to be 0, but was 1',
-                      stackTrace: 'at ECommerce.Tests.Unit.InventoryTests.UpdateInventory_OutOfStock_UpdatesCorrectly() line 45',
-                      durationInMs: 78,
-                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 78).toISOString(),
-                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
-                    }
-                  ]
-                },
-                {
-                  testAssembly: 'ECommerce.Integration.Tests.dll',
-                  testContainer: 'ECommerce.Tests.Integration',
-                  totalCount: 100,
-                  results: [
-                    {
-                      id: 2001,
-                      testCaseTitle: 'Should process order end-to-end',
-                      automatedTestName: 'ECommerce.Tests.Integration.OrderWorkflowTests.ProcessOrder_ValidOrder_CompletesSuccessfully',
-                      outcome: 'passed',
-                      state: 'completed',
-                      priority: 2,
-                      durationInMs: 1250,
-                      startedDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                      completedDate: new Date(Date.now() - 2 * 60 * 60 * 1000 + 1250).toISOString(),
-                      testRun: { id: 12345, name: 'CI/CD Pipeline Run' }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              id: 2,
-              name: 'Security Scan Pipeline',
-              type: 'build',
-              status: 'success',
-              lastRun: {
-                id: 12346,
-                buildNumber: '2024.1.15.2',
-                status: 'completed',
-                result: 'succeeded',
-                queueTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 4 * 60 * 60 * 1000 + 2 * 60 * 1000).toISOString(),
-                finishTime: new Date(Date.now() - 4 * 60 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
-                sourceBranch: 'main',
-                sourceVersion: 'abc123def456',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 89,
-                passed: 89,
-                failed: 0,
-                skipped: 0,
-                passRate: 100,
-                duration: 6.2
-              },
-              codeCoverage: {
-                lineCoverage: 92.1,
-                branchCoverage: 88.7,
-                functionCoverage: 94.3,
-                totalLines: 3240,
-                coveredLines: 2984
-              },
-              qualityGates: [
-                { name: 'Security Score', status: 'passed', threshold: 90, actual: 94, unit: 'points' },
-                { name: 'Vulnerability Count', status: 'passed', threshold: 0, actual: 0, unit: 'issues' }
-              ]
-            }
-          ],
-          lastUpdated: new Date().toISOString(),
-          overallHealth: 'healthy'
-        },
-        {
-          id: 'app2',
-          name: 'User Management Service',
-          description: 'Microservice for user authentication and authorization',
-          pipelines: [
-            {
-              id: 3,
-              name: 'API Tests Pipeline',
-              type: 'build',
-              status: 'failed',
-              lastRun: {
-                id: 12347,
-                buildNumber: '2024.1.15.3',
-                status: 'completed',
-                result: 'partiallySucceeded',
-                queueTime: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 1 * 60 * 60 * 1000 + 3 * 60 * 1000).toISOString(),
-                finishTime: new Date(Date.now() - 1 * 60 * 60 * 1000 + 18 * 60 * 1000).toISOString(),
-                sourceBranch: 'feature/auth-improvements',
-                sourceVersion: 'def456ghi789',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 156,
-                passed: 142,
-                failed: 8,
-                skipped: 6,
-                passRate: 91.0,
-                duration: 15.3
-              },
-              codeCoverage: {
-                lineCoverage: 78.9,
-                branchCoverage: 74.2,
-                functionCoverage: 83.6,
-                totalLines: 8920,
-                coveredLines: 7040
-              },
-              qualityGates: [
-                { name: 'Code Coverage', status: 'warning', threshold: 80, actual: 78.9, unit: '%' },
-                { name: 'Test Pass Rate', status: 'passed', threshold: 90, actual: 91.0, unit: '%' },
-                { name: 'Performance Tests', status: 'failed', threshold: 95, actual: 87, unit: '%' }
-              ]
-            }
-          ],
-          lastUpdated: new Date().toISOString(),
-          overallHealth: 'warning'
-        },
-        {
-          id: 'app3',
-          name: 'Analytics Dashboard',
-          description: 'Real-time analytics and reporting dashboard',
-          pipelines: [
-            {
-              id: 4,
-              name: 'Frontend Build Pipeline',
-              type: 'build',
-              status: 'failed',
-              lastRun: {
-                id: 12348,
-                buildNumber: '2024.1.15.4',
-                status: 'completed',
-                result: 'failed',
-                queueTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 30 * 60 * 1000 + 1 * 60 * 1000).toISOString(),
-                finishTime: new Date(Date.now() - 30 * 60 * 1000 + 5 * 60 * 1000).toISOString(),
-                sourceBranch: 'hotfix/chart-rendering',
-                sourceVersion: 'ghi789jkl012',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 78,
-                passed: 45,
-                failed: 28,
-                skipped: 5,
-                passRate: 57.7,
-                duration: 4.1
-              },
-              codeCoverage: {
-                lineCoverage: 65.4,
-                branchCoverage: 58.9,
-                functionCoverage: 71.2,
-                totalLines: 4560,
-                coveredLines: 2982
-              },
-              qualityGates: [
-                { name: 'Code Coverage', status: 'failed', threshold: 80, actual: 65.4, unit: '%' },
-                { name: 'Test Pass Rate', status: 'failed', threshold: 90, actual: 57.7, unit: '%' },
-                { name: 'Lint Errors', status: 'failed', threshold: 0, actual: 12, unit: 'errors' }
-              ]
-            },
-            {
-              id: 5,
-              name: 'E2E Tests Pipeline',
-              type: 'build',
-              status: 'running',
-              lastRun: {
-                id: 12349,
-                buildNumber: '2024.1.15.5',
-                status: 'inProgress',
-                result: 'none',
-                queueTime: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 10 * 60 * 1000 + 2 * 60 * 1000).toISOString(),
-                finishTime: undefined,
-                sourceBranch: 'hotfix/chart-rendering',
-                sourceVersion: 'ghi789jkl012',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 0,
-                passed: 0,
-                failed: 0,
-                skipped: 0,
-                passRate: 0,
-                duration: 0
-              },
-              codeCoverage: undefined,
-              qualityGates: []
-            },
-            {
-              id: 6,
-              name: 'Legacy API Integration',
-              type: 'build',
-              status: 'success',
-              lastRun: {
-                id: 12350,
-                buildNumber: '2024.1.15.6',
-                status: 'completed',
-                result: 'succeeded',
-                queueTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-                startTime: new Date(Date.now() - 45 * 60 * 1000 + 1 * 60 * 1000).toISOString(),
-                finishTime: new Date(Date.now() - 45 * 60 * 1000 + 8 * 60 * 1000).toISOString(),
-                sourceBranch: 'feature/legacy-integration',
-                sourceVersion: 'mno345pqr678',
-                definition: {} as any,
-                repository: {} as any,
-                requestedBy: {} as any,
-                requestedFor: {} as any,
-                lastChangedBy: {} as any,
-                lastChangedDate: new Date().toISOString(),
-                keepForever: false,
-                retainIndefinitely: false,
-                hasDiagnostics: false,
-                definitionRevision: 1,
-                queue: {} as any,
-                tags: []
-              },
-              testResults: {
-                total: 32,
-                passed: 29,
-                failed: 3,
-                skipped: 0,
-                passRate: 90.6,
-                duration: 2.3
-              },
-              codeCoverage: undefined, // No coverage tooling configured for legacy system
-              qualityGates: [
-                { name: 'Test Pass Rate', status: 'passed', threshold: 85, actual: 90.6, unit: '%' },
-                { name: 'Build Time', status: 'passed', threshold: 10, actual: 7.2, unit: 'min' }
-              ]
-            }
-          ],
-          lastUpdated: new Date().toISOString(),
-          overallHealth: 'critical'
-        }
-      ];
+      // Fetch all applications from configuration
+      const applicationPromises = APPLICATION_CONFIGS.map(appConfig => 
+        azureDevOpsService.fetchApplicationData(appConfig)
+      );
 
-      setApplications(mockApplications);
+      const applications = await Promise.all(applicationPromises);
+
+      setApplications(applications);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch applications');
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Initialize with demo data on mount
-  useEffect(() => {
-    // Only run on client side to avoid hydration issues
-    if (typeof window === 'undefined') return;
-    
-    const demoConfig: AzureDevOpsConfig = {
-      organization: 'your-org',
-      project: 'your-project',
-      personalAccessToken: 'your-token'
-    };
-    initializeService(demoConfig);
-    // Load mock data after component mounts
-    refreshApplications();
-  }, []);
 
   const value: AzureDevOpsContextType = {
     applications,

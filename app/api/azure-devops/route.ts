@@ -19,35 +19,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For demo purposes, return mock data
-    // In production, you would make real Azure DevOps REST API calls here
-    const mockData = {
-      projects: [
-        {
-          id: 'project1',
-          name: 'E-Commerce Platform',
-          description: 'Main e-commerce application with payment processing',
-          state: 'wellFormed',
-          visibility: 'private'
-        },
-        {
-          id: 'project2', 
-          name: 'User Management Service',
-          description: 'Microservice for user authentication and authorization',
-          state: 'wellFormed',
-          visibility: 'private'
-        },
-        {
-          id: 'project3',
-          name: 'Analytics Dashboard', 
-          description: 'Real-time analytics and reporting dashboard',
-          state: 'wellFormed',
-          visibility: 'private'
-        }
-      ]
-    };
+    // Test the connection by fetching projects
+    const baseUrl = `https://dev.azure.com/${config.organization}`;
+    const response = await fetch(`${baseUrl}/_apis/projects?api-version=7.2-preview.1`, {
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`:${config.personalAccessToken}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-    return NextResponse.json(mockData);
+    if (!response.ok) {
+      throw new Error(`Azure DevOps API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Azure DevOps API error:', error);
     return NextResponse.json(

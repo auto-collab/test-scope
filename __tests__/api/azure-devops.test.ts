@@ -7,6 +7,9 @@ const mockNextResponse = {
   json: mockJson,
 };
 
+// Mock fetch for Azure DevOps API calls
+global.fetch = jest.fn();
+
 jest.mock('next/server', () => ({
   NextRequest: jest.fn(),
   NextResponse: {
@@ -86,7 +89,31 @@ describe('/api/azure-devops', () => {
     );
   });
 
-  it('returns mock data for valid configuration', async () => {
+  it('returns Azure DevOps projects for valid configuration', async () => {
+    const mockAzureResponse = {
+      value: [
+        {
+          id: 'real-project-1',
+          name: 'Test Project 1',
+          description: 'A real Azure DevOps project',
+          state: 'wellFormed',
+          visibility: 'private'
+        },
+        {
+          id: 'real-project-2',
+          name: 'Test Project 2',
+          description: 'Another real Azure DevOps project',
+          state: 'wellFormed',
+          visibility: 'private'
+        }
+      ]
+    };
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue(mockAzureResponse)
+    });
+
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
@@ -97,31 +124,17 @@ describe('/api/azure-devops', () => {
 
     await POST(mockRequest);
 
-    expect(mockJson).toHaveBeenCalledWith({
-      projects: [
-        {
-          id: 'project1',
-          name: 'E-Commerce Platform',
-          description: 'Main e-commerce application with payment processing',
-          state: 'wellFormed',
-          visibility: 'private'
-        },
-        {
-          id: 'project2',
-          name: 'User Management Service',
-          description: 'Microservice for user authentication and authorization',
-          state: 'wellFormed',
-          visibility: 'private'
-        },
-        {
-          id: 'project3',
-          name: 'Analytics Dashboard',
-          description: 'Real-time analytics and reporting dashboard',
-          state: 'wellFormed',
-          visibility: 'private'
-        }
-      ]
-    }, undefined);
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://dev.azure.com/test-org/_apis/projects?api-version=7.2-preview.1',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Authorization': expect.stringContaining('Basic'),
+          'Content-Type': 'application/json'
+        })
+      })
+    );
+
+    expect(mockJson).toHaveBeenCalledWith(mockAzureResponse);
   });
 
   it('handles JSON parsing errors', async () => {
