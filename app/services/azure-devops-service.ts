@@ -79,12 +79,31 @@ export class AzureDevOpsService {
   async getBuildDefinitions(projectId: string): Promise<any[]> {
     const endpoint = `/${projectId}/_apis/build/definitions`;
     const response = await this.fetchFromAzureDevOps(endpoint);
-    return response.value || [];
+    const definitions = response.value || [];
+    
+    console.log(`Found ${definitions.length} build definitions in project ${projectId}:`);
+    definitions.forEach((def, index) => {
+      console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
+    });
+    
+    return definitions;
   }
 
   async findBuildDefinitionByName(projectId: string, pipelineName: string): Promise<any | null> {
+    console.log(`Searching for pipeline: "${pipelineName}" in project: ${projectId}`);
     const definitions = await this.getBuildDefinitions(projectId);
-    return definitions.find(def => def.name === pipelineName) || null;
+    const found = definitions.find(def => def.name === pipelineName);
+    
+    if (found) {
+      console.log(`✅ Found pipeline: "${found.name}" (ID: ${found.id})`);
+    } else {
+      console.log(`❌ Pipeline "${pipelineName}" not found. Available pipelines:`);
+      definitions.forEach((def, index) => {
+        console.log(`  ${index + 1}. "${def.name}"`);
+      });
+    }
+    
+    return found || null;
   }
 
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
