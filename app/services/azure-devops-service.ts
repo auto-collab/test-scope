@@ -77,11 +77,11 @@ export class AzureDevOpsService {
   }
 
   async getBuildDefinitions(projectId: string): Promise<any[]> {
-    const endpoint = `/${projectId}/_apis/pipelines`;
+    const endpoint = `/${projectId}/_apis/build/definitions`;
     const response = await this.fetchFromAzureDevOps(endpoint);
     const definitions = response.value || [];
     
-    console.log(`Found ${definitions.length} pipelines in project ${projectId}:`);
+    console.log(`Found ${definitions.length} build definitions in project ${projectId}:`);
     definitions.forEach((def, index) => {
       console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
     });
@@ -107,7 +107,7 @@ export class AzureDevOpsService {
   }
 
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
-    const endpoint = `/${projectId}/_apis/pipelines/${definitionId}/runs?$top=${maxBuilds}`;
+    const endpoint = `/${projectId}/_apis/build/builds?definitions=${definitionId}&$top=${maxBuilds}`;
     const response = await this.fetchFromAzureDevOps(endpoint);
     return response.value || [];
   }
