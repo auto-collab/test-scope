@@ -43,6 +43,12 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       const pat = process.env.NEXT_PUBLIC_AZURE_DEVOPS_PAT;
       const project = APPLICATION_CONFIGS[0]?.projectId; // Use first app's project ID
       
+      console.log('Environment variables:', { 
+        org: org ? 'SET' : 'NOT SET', 
+        pat: pat ? 'SET' : 'NOT SET', 
+        project 
+      });
+      
       if (org && pat && project) {
         const config: AzureDevOpsConfig = {
           organization: org,
@@ -50,9 +56,16 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
           personalAccessToken: pat
         };
         
+        console.log('Initializing Azure DevOps service with config:', { 
+          organization: config.organization, 
+          project: config.project,
+          hasToken: !!config.personalAccessToken 
+        });
+        
         initializeService(config);
         await refreshApplications();
       } else {
+        console.log('Missing environment variables, showing configured apps only');
         // If no env vars, show configured applications without connection
         const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
           id: appConfig.id,

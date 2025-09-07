@@ -24,22 +24,24 @@ export class AzureDevOpsService {
   }
 
   private async fetchFromAzureDevOps(endpoint: string): Promise<any> {
-    const url = `${this.baseUrl}${endpoint}?api-version=7.2-preview.1`;
-    
-    try {
-      const response = await fetch(url, {
-        headers: this.headers,
-      });
+    // Use server-side API route instead of direct client-side calls
+    const response = await fetch('/api/azure-devops', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...this.config,
+        endpoint: endpoint
+      })
+    });
 
-      if (!response.ok) {
-        throw new Error(`Azure DevOps API error: ${response.status} ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to fetch from Azure DevOps:', error);
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API error: ${response.status} ${errorData.error || response.statusText}`);
     }
+
+    return await response.json();
   }
 
   async getBuildDefinitions(projectId: string): Promise<any[]> {

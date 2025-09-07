@@ -9,21 +9,23 @@ interface AzureDevOpsConfig {
 // This runs on the server side, so we can make direct API calls
 export async function POST(request: NextRequest) {
   try {
-    const config: AzureDevOpsConfig = await request.json();
+    const { organization, project, personalAccessToken, endpoint } = await request.json();
     
     // Validate required fields
-    if (!config.organization || !config.project || !config.personalAccessToken) {
+    if (!organization || !personalAccessToken) {
       return NextResponse.json(
         { error: 'Missing required configuration fields' },
         { status: 400 }
       );
     }
 
-    // Test the connection by fetching projects
-    const baseUrl = `https://dev.azure.com/${config.organization}`;
-    const response = await fetch(`${baseUrl}/_apis/projects?api-version=7.2-preview.1`, {
+    // Use the provided endpoint or default to projects
+    const apiEndpoint = endpoint || '/_apis/projects';
+    const baseUrl = `https://dev.azure.com/${organization}`;
+    
+    const response = await fetch(`${baseUrl}${apiEndpoint}?api-version=7.2-preview.1`, {
       headers: {
-        'Authorization': `Basic ${Buffer.from(`:${config.personalAccessToken}`).toString('base64')}`,
+        'Authorization': `Basic ${Buffer.from(`:${personalAccessToken}`).toString('base64')}`,
         'Content-Type': 'application/json',
       },
     });
