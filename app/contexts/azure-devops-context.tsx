@@ -57,7 +57,7 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       // Then try to auto-connect if environment variables are available
       const org = process.env.NEXT_PUBLIC_AZURE_DEVOPS_ORG;
       const pat = process.env.NEXT_PUBLIC_AZURE_DEVOPS_PAT;
-      const project = APPLICATION_CONFIGS[0]?.projectId;
+      const project = process.env.NEXT_PUBLIC_AZURE_DEVOPS_PROJECT;
       
       console.log('Environment variables check:', { 
         org: org ? 'SET' : 'NOT SET', 
@@ -99,12 +99,17 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
       const service = new AzureDevOpsService(config);
       setAzureDevOpsService(service);
       
-      // Validate application configurations
+      // Validate application configurations (only warn if we don't have env vars)
       const validation = validateApplicationConfigs();
       if (!validation.valid) {
         console.warn('Application configuration issues:', validation.errors);
-        setError(`Configuration issues: ${validation.errors.join(', ')}`);
-        return;
+        // Only set error if we don't have environment variables to override
+        if (!config.organization || !config.project || !config.personalAccessToken) {
+          setError(`Configuration issues: ${validation.errors.join(', ')}`);
+          return;
+        } else {
+          console.log('Using environment variables to override config validation');
+        }
       }
       
       setError(null);

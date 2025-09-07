@@ -31,7 +31,7 @@ export interface PipelineConfig {
 // "Test Pipeline", you would group them under one application to see combined results.
 
 // 🔴 REPLACE: Your single Azure DevOps project ID (all pipelines are in this project)
-const AZURE_DEVOPS_PROJECT_ID = 'your-actual-project-name';
+const AZURE_DEVOPS_PROJECT_ID = process.env.NEXT_PUBLIC_AZURE_DEVOPS_PROJECT || 'your-actual-project-name';
 
 export const APPLICATION_CONFIGS: ApplicationConfig[] = [
   {

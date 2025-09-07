@@ -31,16 +31,20 @@ export class AzureDevOpsService {
       hasToken: !!this.config.personalAccessToken 
     });
     
+    const requestBody = {
+      ...this.config,
+      endpoint: endpoint
+    };
+    
+    console.log('Service sending request body:', JSON.stringify(requestBody, null, 2));
+    
     // Use server-side API route instead of direct client-side calls
     const response = await fetch('/api/azure-devops', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...this.config,
-        endpoint: endpoint
-      })
+      body: JSON.stringify(requestBody)
     });
 
     console.log('Service received response:', { 
@@ -49,9 +53,9 @@ export class AzureDevOpsService {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Service API error:', errorData);
-      throw new Error(`API error: ${response.status} ${errorData.error || response.statusText}`);
+      const errorText = await response.text();
+      console.error('Service API error response:', errorText);
+      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();

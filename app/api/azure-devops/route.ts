@@ -9,14 +9,31 @@ interface AzureDevOpsConfig {
 // This runs on the server side, so we can make direct API calls
 export async function POST(request: NextRequest) {
   try {
-    const { organization, project, personalAccessToken, endpoint } = await request.json();
+    let organization, project, personalAccessToken, endpoint;
     
-    console.log('API Route received:', { 
-      organization, 
-      project, 
-      hasToken: !!personalAccessToken, 
-      endpoint 
-    });
+    try {
+      // Try to parse as JSON first (for tests and direct calls)
+      const data = await request.json();
+      ({ organization, project, personalAccessToken, endpoint } = data);
+      console.log('API Route received JSON:', { 
+        organization, 
+        project, 
+        hasToken: !!personalAccessToken, 
+        endpoint 
+      });
+    } catch (jsonError) {
+      // Fallback to text parsing (for debugging)
+      const rawBody = await request.text();
+      console.log('API Route received raw body:', rawBody);
+      const parsed = JSON.parse(rawBody);
+      ({ organization, project, personalAccessToken, endpoint } = parsed);
+      console.log('API Route parsed from text:', { 
+        organization, 
+        project, 
+        hasToken: !!personalAccessToken, 
+        endpoint 
+      });
+    }
     
     // Validate required fields
     if (!organization || !personalAccessToken) {
