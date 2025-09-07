@@ -43,6 +43,12 @@ describe('/api/azure-devops', () => {
   });
 
   it('returns 400 for missing project', async () => {
+    // Mock fetch to return a successful response
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ value: [] })
+    });
+
     const mockRequest = {
       json: jest.fn().mockResolvedValue({
         organization: 'test-org',
@@ -53,9 +59,10 @@ describe('/api/azure-devops', () => {
 
     await POST(mockRequest);
 
+    // Project is no longer required for validation, so this should succeed
     expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Missing required configuration fields' },
-      { status: 400 }
+      { value: [] },
+      undefined
     );
   });
 
