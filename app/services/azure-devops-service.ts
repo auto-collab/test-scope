@@ -103,19 +103,40 @@ export class AzureDevOpsService {
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
     const endpoint = `/${projectId}/_apis/build/builds?definitions=${definitionId}&$top=${maxBuilds}`;
     const response = await this.fetchFromAzureDevOps(endpoint);
-    return response.value || [];
+    const builds = response.value || [];
+    
+    console.log(`Found ${builds.length} builds for definition ${definitionId}:`);
+    builds.forEach((build, index) => {
+      console.log(`  ${index + 1}. Build ${build.id} - Status: ${build.status}, Result: ${build.result}`);
+    });
+    
+    return builds;
   }
 
   async getTestRuns(projectId: string, buildId: number): Promise<TestRun[]> {
     const endpoint = `/${projectId}/_apis/test/runs?buildIds=${buildId}`;
     const response = await this.fetchFromAzureDevOps(endpoint);
-    return response.value || [];
+    const testRuns = response.value || [];
+    
+    console.log(`Found ${testRuns.length} test runs for build ${buildId}:`);
+    testRuns.forEach((run, index) => {
+      console.log(`  ${index + 1}. Test Run ${run.id} - State: ${run.state}, Statistics: ${run.runStatistics?.length || 0} stats`);
+    });
+    
+    return testRuns;
   }
 
   async getCodeCoverage(projectId: string, buildId: number): Promise<any> {
     try {
       const endpoint = `/${projectId}/_apis/test/CodeCoverage?buildId=${buildId}`;
       const response = await this.fetchFromAzureDevOps(endpoint);
+      
+      console.log(`Code coverage data for build ${buildId}:`, {
+        hasCoverageData: !!response.coverageData,
+        coverageDataLength: response.coverageData?.length || 0,
+        hasError: !!response.lastError
+      });
+      
       return response;
     } catch (error) {
       // Code coverage might not be available for all builds
@@ -125,12 +146,19 @@ export class AzureDevOpsService {
   }
 
   private calculateTestResultsSummary(testRuns: TestRun[]): TestResultsSummary | undefined {
-    if (!testRuns.length) return undefined;
+    if (!testRuns.length) {
+      console.log('No test runs provided for summary calculation');
+      return undefined;
+    }
+
+    console.log(`Calculating test results summary from ${testRuns.length} test runs`);
 
     const totals = testRuns.reduce((acc, run) => {
       const stats = run.runStatistics || [];
+      console.log(`Processing test run ${run.id} with ${stats.length} statistics`);
       
       stats.forEach(stat => {
+        console.log(`  Stat: ${stat.outcome} - Count: ${stat.count}`);
         switch (stat.outcome) {
           case 'passed':
             acc.passed += stat.count;
@@ -149,7 +177,7 @@ export class AzureDevOpsService {
       return acc;
     }, { total: 0, passed: 0, failed: 0, skipped: 0 });
 
-    return {
+    const summary = {
       ...totals,
       passRate: totals.total > 0 ? (totals.passed / totals.total) * 100 : 0,
       duration: testRuns.reduce((sum, run) => {
@@ -161,28 +189,47 @@ export class AzureDevOpsService {
         return sum;
       }, 0)
     };
+
+    console.log('Test results summary calculated:', summary);
+    return summary;
   }
 
   private parseCodeCoverage(coverageData: any): CodeCoverageSummary | undefined {
-    if (!coverageData?.coverageData?.length) return undefined;
+    if (!coverageData?.coverageData?.length) {
+      console.log('No coverage data available');
+      return undefined;
+    }
+
+    console.log('Parsing code coverage data:', {
+      coverageDataLength: coverageData.coverageData.length,
+      hasError: !!coverageData.lastError
+    });
 
     try {
       const coverage = coverageData.coverageData[0];
       const stats = coverage.coverageStats || [];
 
+      console.log(`Found ${stats.length} coverage statistics:`, stats.map(s => `${s.label}: ${s.covered}/${s.total}`));
+
       const lineCoverage = stats.find((s: any) => s.label === 'Lines');
       const branchCoverage = stats.find((s: any) => s.label === 'Branches');
       const functionCoverage = stats.find((s: any) => s.label === 'Functions');
 
-      if (!lineCoverage) return undefined;
+      if (!lineCoverage) {
+        console.log('No line coverage data found');
+        return undefined;
+      }
 
-      return {
+      const summary = {
         lineCoverage: lineCoverage.covered > 0 ? (lineCoverage.covered / lineCoverage.total) * 100 : 0,
         branchCoverage: branchCoverage ? (branchCoverage.covered / branchCoverage.total) * 100 : 0,
         functionCoverage: functionCoverage ? (functionCoverage.covered / functionCoverage.total) * 100 : 0,
         totalLines: lineCoverage.total,
         coveredLines: lineCoverage.covered
       };
+
+      console.log('Code coverage summary calculated:', summary);
+      return summary;
     } catch (error) {
       console.warn('Failed to parse code coverage data:', error);
       return undefined;
