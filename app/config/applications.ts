@@ -10,7 +10,8 @@ export interface ApplicationConfig {
 }
 
 export interface PipelineConfig {
-  name: string; // Pipeline name (used to find the build definition)
+  definitionId: number; // Azure DevOps build definition ID (unique identifier)
+  name: string; // Pipeline name (for display purposes)
   type: 'build' | 'release';
   // Optional: specify which builds to include (latest, specific branch, etc.)
   buildFilter?: {
@@ -41,7 +42,8 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'CI/CD Pipeline', // ✅ Pipeline name from Azure DevOps
+        definitionId: 123, // 🔴 REPLACE: Your actual build definition ID
+        name: 'CI/CD Pipeline', // Display name
         type: 'build',
         buildFilter: {
           branchName: 'main',
@@ -49,7 +51,8 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
         }
       },
       {
-        name: 'Security Scan Pipeline', // ✅ Another pipeline for this app
+        definitionId: 456, // 🔴 REPLACE: Your actual build definition ID
+        name: 'Security Scan Pipeline', // Display name
         type: 'build',
         buildFilter: {
           maxBuilds: 1
@@ -64,7 +67,8 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'API Tests Pipeline', // ✅ Pipeline that runs tests for this service
+        definitionId: 789, // 🔴 REPLACE: Your actual build definition ID
+        name: 'API Tests Pipeline', // Display name
         type: 'build',
         buildFilter: {
           branchName: 'main',
@@ -80,11 +84,13 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'Frontend Build Pipeline', // ✅ Pipeline that builds the frontend
+        definitionId: 101, // 🔴 REPLACE: Your actual build definition ID
+        name: 'Frontend Build Pipeline', // Display name
         type: 'build'
       },
       {
-        name: 'E2E Tests Pipeline', // ✅ Pipeline that runs end-to-end tests
+        definitionId: 102, // 🔴 REPLACE: Your actual build definition ID
+        name: 'E2E Tests Pipeline', // Display name
         type: 'build'
       }
     ]
@@ -106,9 +112,10 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
 //
 // 3. ADD PIPELINES TO EACH APPLICATION:
 //    - Go to Pipelines in your Azure DevOps project
-//    - Copy the exact name of each pipeline you want to monitor
-//    - The system will fetch the latest test results and coverage from these pipelines
-//    - Example: "Build Pipeline", "Unit Tests", "E2E Tests", "Security Scan"
+//    - Click on each pipeline you want to monitor
+//    - Copy the Definition ID from the URL (e.g., /build/definitions/123)
+//    - Replace the placeholder definitionId values below with your actual IDs
+//    - The name field is just for display - you can customize it
 //
 // 4. CONFIGURE BRANCH FILTERING (optional):
 //    - Specify which branch builds you want to monitor (usually 'main' or 'master')
@@ -135,8 +142,11 @@ export function validateApplicationConfigs(): { valid: boolean; errors: string[]
     }
     
     app.pipelines.forEach(pipeline => {
+      if (!pipeline.definitionId || pipeline.definitionId <= 0) {
+        errors.push(`Pipeline in "${app.name}" has invalid definitionId. Please provide the actual build definition ID from Azure DevOps.`);
+      }
       if (!pipeline.name || pipeline.name.trim() === '') {
-        errors.push(`Pipeline in "${app.name}" has empty name. Please provide the exact pipeline name from Azure DevOps.`);
+        errors.push(`Pipeline in "${app.name}" has empty name. Please provide a display name for the pipeline.`);
       }
     });
   });

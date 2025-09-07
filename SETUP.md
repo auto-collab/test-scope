@@ -29,7 +29,8 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     projectId: AZURE_DEVOPS_PROJECT_ID, // ✅ Uses the single project ID
     pipelines: [
       {
-        name: 'CI/CD Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        definitionId: 123, // 🔴 REPLACE: Your actual build definition ID
+        name: 'CI/CD Pipeline', // Display name (can be anything)
         type: 'build',
         buildFilter: {
           branchName: 'main',
@@ -51,11 +52,12 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
 4. Use the `PROJECT_ID` from the URL
 5. **Note**: All your pipelines should be in this single project
 
-#### **Pipeline Names:**
+#### **Pipeline Definition IDs:**
 1. Go to **Pipelines** in your Azure DevOps project
-2. Copy the exact name of each pipeline you want to monitor
-3. The system will automatically find the pipeline and get the latest build
-4. Example names: `"CI/CD Pipeline"`, `"Frontend Build"`, `"E2E Tests"`
+2. Click on each pipeline you want to monitor
+3. Look at the URL: `https://dev.azure.com/{org}/{project}/_build?definitionId=123`
+4. Copy the number after `definitionId=` (e.g., `123`)
+5. This is the unique identifier for each pipeline
 
 ### 3. **Configure Azure DevOps Connection**
 
@@ -126,7 +128,8 @@ buildFilter: {
 
 **"Configuration issues" error?**
 - Check that all `your-*-project-id` placeholders are replaced
-- Verify pipeline names match exactly (case-sensitive) with Azure DevOps
+- Verify definitionId values are actual numbers from Azure DevOps URLs
+- Make sure definitionId values are greater than 0
 
 **"Failed to connect" error?**
 - Verify your Personal Access Token has correct permissions

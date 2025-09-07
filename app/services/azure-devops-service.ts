@@ -111,117 +111,7 @@ export class AzureDevOpsService {
     }
   }
 
-  // Removed getBuildDefinitions to avoid rate limiting - we now search for specific pipelines only
-
-  async findBuildDefinitionByName(projectId: string, pipelineName: string): Promise<any | null> {
-    console.log(`Searching for pipeline: "${pipelineName}" in project: ${projectId}`);
-    
-    try {
-      // First try the targeted search with name parameter (most efficient)
-      console.log(`Trying targeted search for: "${pipelineName}"`);
-      const targetedEndpoint = `/${projectId}/_apis/build/definitions?name=${encodeURIComponent(pipelineName)}`;
-      const targetedResponse = await this.fetchFromAzureDevOps(targetedEndpoint);
-      const targetedDefinitions = targetedResponse.value || [];
-      
-      console.log(`Targeted search returned ${targetedDefinitions.length} definitions`);
-      
-      // Log what we got back for debugging
-      if (targetedDefinitions.length > 0) {
-        console.log('Targeted search results:');
-        targetedDefinitions.forEach((def: any, index: number) => {
-          console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
-        });
-      }
-      
-      // Try exact match in targeted results first
-      let found = targetedDefinitions.find((def: any) => def.name === pipelineName);
-      
-      if (found) {
-        console.log(`✅ Found exact match via targeted search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      // Try case-insensitive match in targeted results
-      found = targetedDefinitions.find((def: any) => def.name.toLowerCase() === pipelineName.toLowerCase());
-      
-      if (found) {
-        console.log(`✅ Found case-insensitive match via targeted search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      // If targeted search returned some results, try partial matching on those
-      if (targetedDefinitions.length > 0) {
-        found = targetedDefinitions.find((def: any) => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
-        
-        if (found) {
-          console.log(`✅ Found partial match via targeted search: "${found.name}" (ID: ${found.id})`);
-          return found;
-        }
-      }
-      
-      // Only if targeted search failed completely, fall back to getting all definitions
-      console.log(`Targeted search failed, falling back to comprehensive search...`);
-      const allEndpoint = `/${projectId}/_apis/build/definitions`;
-      const allResponse = await this.fetchFromAzureDevOps(allEndpoint);
-      const allDefinitions = allResponse.value || [];
-      
-      console.log(`Comprehensive search returned ${allDefinitions.length} total definitions`);
-      
-      // Log all available pipeline names for debugging (only if we had to do comprehensive search)
-      if (allDefinitions.length <= 20) { // Only log if reasonable number
-        console.log('Available pipeline names:');
-        allDefinitions.forEach((def: any, index: number) => {
-          console.log(`  ${index + 1}. "${def.name}" (ID: ${def.id})`);
-        });
-      } else {
-        console.log(`Found ${allDefinitions.length} pipelines (too many to list individually)`);
-      }
-      
-      // Try exact match in all definitions
-      found = allDefinitions.find((def: any) => def.name === pipelineName);
-      
-      if (found) {
-        console.log(`✅ Found exact match in comprehensive search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      // Try case-insensitive match in all definitions
-      found = allDefinitions.find((def: any) => def.name.toLowerCase() === pipelineName.toLowerCase());
-      
-      if (found) {
-        console.log(`✅ Found case-insensitive match in comprehensive search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      // Try partial match in all definitions
-      found = allDefinitions.find((def: any) => def.name.toLowerCase().includes(pipelineName.toLowerCase()));
-      
-      if (found) {
-        console.log(`✅ Found partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      // Try reverse partial match
-      found = allDefinitions.find((def: any) => pipelineName.toLowerCase().includes(def.name.toLowerCase()));
-      
-      if (found) {
-        console.log(`✅ Found reverse partial match in comprehensive search: "${found.name}" (ID: ${found.id})`);
-        return found;
-      }
-      
-      console.log(`❌ Pipeline "${pipelineName}" not found in any search method.`);
-      if (allDefinitions.length <= 50) { // Only show names if reasonable number
-        console.log(`Available pipeline names: ${allDefinitions.map((d: any) => d.name).join(', ')}`);
-      } else {
-        console.log(`Found ${allDefinitions.length} total pipelines - too many to list names`);
-      }
-      return null;
-      
-    } catch (error) {
-      console.error(`Error searching for pipeline "${pipelineName}":`, error);
-      return null;
-    }
-  }
+  // No longer need to search for build definitions - we use definition IDs directly
 
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
     const endpoint = `/${projectId}/_apis/build/builds?definitions=${definitionId}&$top=${maxBuilds}`;
@@ -361,34 +251,21 @@ export class AzureDevOpsService {
   }
 
   async fetchPipelineData(appConfig: ApplicationConfig, pipelineConfig: PipelineConfig): Promise<PipelineSummary> {
-    console.log(`fetchPipelineData called for pipeline: ${pipelineConfig.name} in project: ${appConfig.projectId}`);
+    console.log(`fetchPipelineData called for pipeline: ${pipelineConfig.name} (ID: ${pipelineConfig.definitionId}) in project: ${appConfig.projectId}`);
     try {
-      // First, find the build definition by name (this will only search for the specific pipeline)
-      const buildDefinition = await this.findBuildDefinitionByName(appConfig.projectId, pipelineConfig.name);
-      
-      if (!buildDefinition) {
-        console.warn(`Pipeline "${pipelineConfig.name}" not found in project ${appConfig.projectId}`);
-        return {
-          id: 0,
-          name: pipelineConfig.name,
-          type: pipelineConfig.type,
-          status: 'unknown',
-          testResults: undefined,
-          codeCoverage: undefined,
-          qualityGates: []
-        };
-      }
+      // Use the definition ID directly - no need to search
+      console.log(`Using definition ID: ${pipelineConfig.definitionId} for pipeline: ${pipelineConfig.name}`);
 
-      // Get recent builds for this pipeline
+      // Get recent builds for this pipeline using the definition ID
       const builds = await this.getBuilds(
         appConfig.projectId, 
-        buildDefinition.id, 
+        pipelineConfig.definitionId, 
         pipelineConfig.buildFilter?.maxBuilds || 1
       );
 
       if (!builds.length) {
         return {
-          id: buildDefinition.id,
+          id: pipelineConfig.definitionId,
           name: pipelineConfig.name,
           type: pipelineConfig.type,
           status: 'unknown',
@@ -421,7 +298,7 @@ export class AzureDevOpsService {
       }
 
       return {
-        id: buildDefinition.id,
+        id: pipelineConfig.definitionId,
         name: pipelineConfig.name,
         type: pipelineConfig.type,
         status,
@@ -436,7 +313,7 @@ export class AzureDevOpsService {
       
       // Return error state
       return {
-        id: 0,
+        id: pipelineConfig.definitionId,
         name: pipelineConfig.name,
         type: pipelineConfig.type,
         status: 'unknown',
