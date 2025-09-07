@@ -20,26 +20,36 @@ export interface PipelineConfig {
 }
 
 // ==================================================================================
-// 🔧 CONFIGURATION: Update these values with your real Azure DevOps information
+// 🔧 CONFIGURATION: Define your applications and their associated pipelines
 // ==================================================================================
+// 
+// Each application represents a logical grouping of pipelines that work together.
+// All pipelines are in the same Azure DevOps project, but grouped conceptually
+// by application for better organization and monitoring.
+//
+// Example: If you have an "E-Commerce App" that has both a "Build Pipeline" and 
+// "Test Pipeline", you would group them under one application to see combined results.
+
+// 🔴 REPLACE: Your single Azure DevOps project ID (all pipelines are in this project)
+const AZURE_DEVOPS_PROJECT_ID = 'your-project-id';
 
 export const APPLICATION_CONFIGS: ApplicationConfig[] = [
   {
     id: 'ecommerce-app',
     name: 'E-Commerce Platform',
     description: 'Main e-commerce application with payment processing',
-    projectId: 'your-ecommerce-project-id', // 🔴 REPLACE: Get from Azure DevOps project URL
+    projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'CI/CD Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        name: 'CI/CD Pipeline', // ✅ Pipeline name from Azure DevOps
         type: 'build',
         buildFilter: {
           branchName: 'main',
-          maxBuilds: 1 // Only get the latest build
+          maxBuilds: 1 // Only get the latest build results
         }
       },
       {
-        name: 'Security Scan Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        name: 'Security Scan Pipeline', // ✅ Another pipeline for this app
         type: 'build',
         buildFilter: {
           maxBuilds: 1
@@ -51,10 +61,10 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     id: 'user-management',
     name: 'User Management Service',
     description: 'Microservice for user authentication and authorization',
-    projectId: 'your-user-service-project-id', // 🔴 REPLACE: Get from Azure DevOps project URL
+    projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'API Tests Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        name: 'API Tests Pipeline', // ✅ Pipeline that runs tests for this service
         type: 'build',
         buildFilter: {
           branchName: 'main',
@@ -67,14 +77,14 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     id: 'analytics-dashboard',
     name: 'Analytics Dashboard',
     description: 'Real-time analytics and reporting dashboard',
-    projectId: 'your-analytics-project-id', // 🔴 REPLACE: Get from Azure DevOps project URL
+    projectId: AZURE_DEVOPS_PROJECT_ID,
     pipelines: [
       {
-        name: 'Frontend Build Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        name: 'Frontend Build Pipeline', // ✅ Pipeline that builds the frontend
         type: 'build'
       },
       {
-        name: 'E2E Tests Pipeline', // ✅ Use exact pipeline name from Azure DevOps
+        name: 'E2E Tests Pipeline', // ✅ Pipeline that runs end-to-end tests
         type: 'build'
       }
     ]
@@ -82,24 +92,31 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
 ];
 
 // ==================================================================================
-// 📋 HOW TO GET THE REQUIRED VALUES:
+// 📋 HOW TO CONFIGURE YOUR APPLICATIONS:
 // ==================================================================================
 // 
-// 1. PROJECT ID:
-//    - Go to your Azure DevOps organization
-//    - Navigate to your project
-//    - Look at the URL: https://dev.azure.com/{org}/{PROJECT_ID}/_build
-//    - The PROJECT_ID is the name/ID in the URL
+// 1. SET YOUR AZURE DEVOPS PROJECT ID:
+//    - Replace 'your-project-id' with your actual Azure DevOps project name
+//    - All pipelines are in this single project
 //
-// 2. PIPELINE NAME:
+// 2. CREATE YOUR APPLICATIONS (conceptual groupings):
+//    - Give each a unique ID (e.g., 'my-app', 'frontend-service')
+//    - Add descriptive names and descriptions
+//    - Group related pipelines together logically
+//
+// 3. ADD PIPELINES TO EACH APPLICATION:
 //    - Go to Pipelines in your Azure DevOps project
 //    - Copy the exact name of each pipeline you want to monitor
-//    - The system will automatically find the pipeline ID and latest build
-//    - Example: "CI/CD Pipeline", "Frontend Build", "E2E Tests"
+//    - The system will fetch the latest test results and coverage from these pipelines
+//    - Example: "Build Pipeline", "Unit Tests", "E2E Tests", "Security Scan"
 //
-// 3. BRANCH NAME (optional):
+// 4. CONFIGURE BRANCH FILTERING (optional):
 //    - Specify which branch builds you want to monitor (usually 'main' or 'master')
 //    - Leave undefined to get builds from all branches
+//
+// EXAMPLE WORKFLOW:
+// 1. Your CI/CD triggers → Pipeline runs → Tests execute → Results published
+// 2. This dashboard fetches those results → Shows QA metrics → You see the status
 //
 // ==================================================================================
 

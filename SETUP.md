@@ -1,5 +1,16 @@
 # 🚀 Test Scope Dashboard - Production Setup
 
+## 🎯 What This Dashboard Does
+
+This dashboard connects to your Azure DevOps organization and fetches real-time QA data from your configured pipelines, including:
+
+- **Test Results**: Pass/fail rates, test counts, execution times from your latest pipeline runs
+- **Code Coverage**: Line coverage, branch coverage, function coverage from your test pipelines  
+- **Build Status**: Success/failure status, build times from your CI/CD pipelines
+- **Pipeline Health**: Overall application health based on all associated pipelines
+
+**Key Point**: You define which pipelines belong to each application, and the system fetches the latest results from those specific pipelines whenever they run.
+
 ## Quick Setup (3 steps)
 
 ### 1. **Configure Your Applications**
@@ -7,16 +18,18 @@
 Edit `app/config/applications.ts` and replace the placeholder values:
 
 ```typescript
+// 🔴 REPLACE: Your single Azure DevOps project ID (all pipelines are in this project)
+const AZURE_DEVOPS_PROJECT_ID = 'MyProject';
+
 export const APPLICATION_CONFIGS: ApplicationConfig[] = [
   {
     id: 'my-web-app',
     name: 'My Web Application',
     description: 'Frontend and API for our main product',
-    projectId: 'MyWebProject', // 🔴 Your Azure DevOps project name
+    projectId: AZURE_DEVOPS_PROJECT_ID, // ✅ Uses the single project ID
     pipelines: [
       {
-        id: 42, // 🔴 Your build definition ID
-        name: 'CI/CD Pipeline',
+        name: 'CI/CD Pipeline', // ✅ Use exact pipeline name from Azure DevOps
         type: 'build',
         buildFilter: {
           branchName: 'main',
@@ -31,11 +44,12 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
 
 ### 2. **Get Your Azure DevOps Values**
 
-#### **Project ID:**
+#### **Project ID (Single Project):**
 1. Go to your Azure DevOps organization
-2. Navigate to your project
+2. Navigate to your project (the one containing all your pipelines)
 3. Look at the URL: `https://dev.azure.com/{org}/{PROJECT_ID}/_build`
 4. Use the `PROJECT_ID` from the URL
+5. **Note**: All your pipelines should be in this single project
 
 #### **Pipeline Names:**
 1. Go to **Pipelines** in your Azure DevOps project
