@@ -37,11 +37,11 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
 3. Look at the URL: `https://dev.azure.com/{org}/{PROJECT_ID}/_build`
 4. Use the `PROJECT_ID` from the URL
 
-#### **Build Definition ID:**
+#### **Pipeline Names:**
 1. Go to **Pipelines** in your Azure DevOps project
-2. Click on a pipeline
-3. Look at the URL: `https://dev.azure.com/{org}/{project}/_build?definitionId={ID}`
-4. Use the `ID` number
+2. Copy the exact name of each pipeline you want to monitor
+3. The system will automatically find the pipeline and get the latest build
+4. Example names: `"CI/CD Pipeline"`, `"Frontend Build"`, `"E2E Tests"`
 
 ### 3. **Configure Azure DevOps Connection**
 
@@ -86,15 +86,15 @@ export const APPLICATION_CONFIGS: ApplicationConfig[] = [
     id: 'frontend-app',
     projectId: 'MyFrontendProject',
     pipelines: [
-      { id: 123, name: 'Build & Test', type: 'build' },
-      { id: 124, name: 'E2E Tests', type: 'build' }
+      { name: 'Build & Test', type: 'build' },
+      { name: 'E2E Tests', type: 'build' }
     ]
   },
   {
     id: 'backend-api',
     projectId: 'MyBackendProject', 
     pipelines: [
-      { id: 456, name: 'API Tests', type: 'build' }
+      { name: 'API Tests', type: 'build' }
     ]
   }
 ];
@@ -112,7 +112,7 @@ buildFilter: {
 
 **"Configuration issues" error?**
 - Check that all `your-*-project-id` placeholders are replaced
-- Verify build definition IDs are real numbers (not 123, 124, etc.)
+- Verify pipeline names match exactly (case-sensitive) with Azure DevOps
 
 **"Failed to connect" error?**
 - Verify your Personal Access Token has correct permissions

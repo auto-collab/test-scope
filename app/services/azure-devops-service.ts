@@ -42,6 +42,17 @@ export class AzureDevOpsService {
     }
   }
 
+  async getBuildDefinitions(projectId: string): Promise<any[]> {
+    const endpoint = `/${projectId}/_apis/build/definitions`;
+    const response = await this.fetchFromAzureDevOps(endpoint);
+    return response.value || [];
+  }
+
+  async findBuildDefinitionByName(projectId: string, pipelineName: string): Promise<any | null> {
+    const definitions = await this.getBuildDefinitions(projectId);
+    return definitions.find(def => def.name === pipelineName) || null;
+  }
+
   async getBuilds(projectId: string, definitionId: number, maxBuilds: number = 1): Promise<Build[]> {
     const endpoint = `/${projectId}/_apis/build/builds?definitions=${definitionId}&$top=${maxBuilds}`;
     const response = await this.fetchFromAzureDevOps(endpoint);
@@ -133,16 +144,32 @@ export class AzureDevOpsService {
 
   async fetchPipelineData(appConfig: ApplicationConfig, pipelineConfig: PipelineConfig): Promise<PipelineSummary> {
     try {
+      // First, find the build definition by name
+      const buildDefinition = await this.findBuildDefinitionByName(appConfig.projectId, pipelineConfig.name);
+      
+      if (!buildDefinition) {
+        console.warn(`Pipeline "${pipelineConfig.name}" not found in project ${appConfig.projectId}`);
+        return {
+          id: 0, // Will be set to actual ID if found
+          name: pipelineConfig.name,
+          type: pipelineConfig.type,
+          status: 'unknown',
+          testResults: undefined,
+          codeCoverage: undefined,
+          qualityGates: []
+        };
+      }
+
       // Get recent builds for this pipeline
       const builds = await this.getBuilds(
         appConfig.projectId, 
-        pipelineConfig.id, 
+        buildDefinition.id, 
         pipelineConfig.buildFilter?.maxBuilds || 1
       );
 
       if (!builds.length) {
         return {
-          id: pipelineConfig.id,
+          id: buildDefinition.id,
           name: pipelineConfig.name,
           type: pipelineConfig.type,
           status: 'unknown',
@@ -175,7 +202,7 @@ export class AzureDevOpsService {
       }
 
       return {
-        id: pipelineConfig.id,
+        id: buildDefinition.id,
         name: pipelineConfig.name,
         type: pipelineConfig.type,
         status,
@@ -190,7 +217,7 @@ export class AzureDevOpsService {
       
       // Return error state
       return {
-        id: pipelineConfig.id,
+        id: 0,
         name: pipelineConfig.name,
         type: pipelineConfig.type,
         status: 'unknown',
