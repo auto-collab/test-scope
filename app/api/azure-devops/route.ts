@@ -13,7 +13,8 @@ interface ApiRequest {
   parameters?: Record<string, unknown>;
 }
 
-// This runs on the server side, so we can make direct API calls using the official SDK
+// This runs on the server side and uses the official Azure DevOps Node.js SDK
+// All Azure DevOps API interactions go through the SDK, not direct HTTP calls
 export async function POST(request: NextRequest) {
   try {
     let organization, project, personalAccessToken, endpoint, method, parameters;
@@ -57,7 +58,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Azure DevOps connection using the official SDK
+    // Create Azure DevOps connection using the official Azure DevOps Node.js SDK
+    // This ensures we use the official package instead of making direct HTTP calls
     const orgUrl = `https://dev.azure.com/${organization}`;
     const authHandler = azdev.getPersonalAccessTokenHandler(personalAccessToken);
     const connection = new azdev.WebApi(orgUrl, authHandler);
@@ -109,31 +111,21 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      // Fallback to generic REST API call for unsupported endpoints
-      console.log('Using fallback REST API call for endpoint:', endpoint);
-      const apiVersion = endpoint.includes('/_apis/build/definitions') ? '7.2-preview.1' : '7.2';
-      const fullUrl = `${orgUrl}${endpoint}?api-version=${apiVersion}`;
-      
-      const response = await fetch(fullUrl, {
-        headers: {
-          'Authorization': `Basic ${Buffer.from(`:${personalAccessToken}`).toString('base64')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Azure DevOps API error response:', errorText);
-        throw new Error(`Azure DevOps API error: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-
-      result = await response.json();
+      // Unsupported endpoint - return error instead of making direct HTTP calls
+      console.log('Unsupported endpoint, using Azure DevOps SDK only:', endpoint);
+      throw new Error(`Unsupported Azure DevOps endpoint: ${endpoint}. Only SDK-supported endpoints are allowed.`);
     }
 
-    console.log('Successfully fetched data using SDK:', { 
-      hasValue: !!result.value, 
-      valueLength: result.value?.length || 0,
+    // Handle different response types from the Azure DevOps SDK
+    const hasValue = 'value' in result && Array.isArray((result as any).value);
+    const hasValues = 'values' in result && Array.isArray((result as any).values);
+    const isArray = Array.isArray(result);
+    
+    console.log('Successfully fetched data using Azure DevOps SDK:', { 
+      hasValue,
+      hasValues,
+      isArray,
+      valueLength: hasValue ? (result as any).value.length : hasValues ? (result as any).values.length : isArray ? result.length : 0,
       resultType: typeof result
     });
     
@@ -141,10 +133,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Azure DevOps SDK error:', error);
     return NextResponse.json(
-      { error: `Failed to connect to Azure DevOps: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Failed to connect to Azure DevOps using SDK: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
 }
 
-// Legacy functions removed - now using Azure DevOps SDK
+// All Azure DevOps API interactions now use the official azure-devops-node-api package
+// No direct HTTP calls to Azure DevOps endpoints are made

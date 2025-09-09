@@ -21,6 +21,8 @@ export class AzureDevOpsService {
       hasToken: !!config.personalAccessToken
     });
     this.config = config;
+    // Note: baseUrl and headers are kept for compatibility but not used for direct API calls
+    // All Azure DevOps interactions go through the API route which uses the official SDK
     this.baseUrl = `https://dev.azure.com/${config.organization}`;
     this.headers = {
       'Authorization': `Basic ${Buffer.from(`:${config.personalAccessToken}`).toString('base64')}`,
@@ -57,7 +59,8 @@ export class AzureDevOpsService {
     await new Promise(resolve => setTimeout(resolve, delay));
     
     try {
-      // Use server-side API route instead of direct client-side calls
+      // Use server-side API route that uses the Azure DevOps SDK
+      // This ensures we use the official package instead of direct HTTP calls
       const response = await fetch('/api/azure-devops', {
         method: 'POST',
         headers: {
@@ -114,7 +117,8 @@ export class AzureDevOpsService {
     }
   }
 
-  // New methods using the Azure DevOps SDK
+  // All methods use the Azure DevOps Node.js SDK through the API route
+  // No direct HTTP calls to Azure DevOps are made from this service
   
   async getProjects(): Promise<unknown[]> {
     const endpoint = '/_apis/projects';
