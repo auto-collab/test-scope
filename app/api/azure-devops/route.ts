@@ -87,14 +87,22 @@ export async function POST(request: NextRequest) {
       // Build API - Builds
       const buildApi: ba.IBuildApi = await connection.getBuildApi();
       if (method === 'GET' && parameters?.definitionId) {
+        // Get builds for a specific definition ID
         result = await buildApi.getBuilds(project, [parameters.definitionId]);
       } else {
+        // Get all builds for the project
         result = await buildApi.getBuilds(project);
       }
     } else if (endpoint.includes('/_apis/test/runs')) {
       // Test API - Test Runs
       const testApi: ta.ITestApi = await connection.getTestApi();
-      result = await testApi.getTestRuns(project);
+      if (parameters?.buildId) {
+        // Get test runs for a specific build
+        result = await testApi.getTestRuns(project, undefined, undefined, undefined, parameters.buildId);
+      } else {
+        // Get all test runs for the project
+        result = await testApi.getTestRuns(project);
+      }
     } else if (endpoint.includes('/_apis/test/results')) {
       // Test API - Test Results
       const testApi: ta.ITestApi = await connection.getTestApi();
