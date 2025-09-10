@@ -1,9 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Application, AzureDevOpsConfig } from '../types/azure-devops';
 import { APPLICATION_CONFIGS, validateApplicationConfigs } from '../config/applications';
 import { AzureDevOpsService } from '../services/azure-devops-service';
+
+// Global flag to prevent multiple initialization attempts across the entire app
+let globalInitializationAttempted = false;
 
 interface AzureDevOpsContextType {
   applications: Application[];
@@ -35,6 +38,8 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [azureDevOpsService, setAzureDevOpsService] = useState<AzureDevOpsService | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
+  const hasAttemptedConnectionRef = useRef(false);
 
   const refreshApplications = useCallback(async () => {
     console.log('refreshApplications called');
@@ -90,7 +95,15 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
   }, [azureDevOpsService]);
 
   const initializeService = useCallback((config: AzureDevOpsConfig) => {
+    // Prevent multiple simultaneous initialization attempts
+    if (isInitializing) {
+      console.log('Initialization already in progress, skipping duplicate call');
+      return;
+    }
+
     console.log('initializeService called with config:', config);
+    setIsInitializing(true);
+    
     try {
       // Validate the config
       if (!config.organization || !config.project || !config.personalAccessToken) {
@@ -126,11 +139,19 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
     } catch (err) {
       console.error('Error in initializeService:', err);
       setError(err instanceof Error ? err.message : 'Failed to initialize Azure DevOps service');
+    } finally {
+      setIsInitializing(false);
     }
-  }, [azureDevOpsService]);
+  }, [isInitializing, azureDevOpsService]);
 
   // Show configured applications immediately, then try to auto-connect
   useEffect(() => {
+    // Prevent multiple connection attempts using global flag (persists across component instances)
+    if (globalInitializationAttempted) {
+      console.log('Global initialization already attempted, skipping duplicate initialization');
+      return;
+    }
+
     const initializeFromEnv = async () => {
       // Always show configured apps first to avoid hydration issues
       const configuredApps: Application[] = APPLICATION_CONFIGS.map(appConfig => ({
@@ -172,15 +193,19 @@ export const AzureDevOpsProvider: React.FC<AzureDevOpsProviderProps> = ({ childr
         });
         
         console.log('Calling initializeService...');
+        globalInitializationAttempted = true;
+        hasAttemptedConnectionRef.current = true;
         initializeService(config);
         console.log('Service initialization started, will auto-refresh when service is ready');
       } else {
         console.log('No environment variables found, showing configured apps only');
+        globalInitializationAttempted = true;
+        hasAttemptedConnectionRef.current = true;
       }
     };
     
     initializeFromEnv();
-  }, [initializeService]);
+  }, []); // Empty dependency array to run only once
 
   const value: AzureDevOpsContextType = {
     applications,

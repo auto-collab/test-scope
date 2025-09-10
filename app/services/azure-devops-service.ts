@@ -13,6 +13,7 @@ export class AzureDevOpsService {
   private config: AzureDevOpsConfig;
   private baseUrl: string;
   private headers: HeadersInit;
+  private activeRequests: Set<string> = new Set();
 
   constructor(config: AzureDevOpsConfig) {
     console.log('AzureDevOpsService constructor called with:', {
@@ -36,6 +37,15 @@ export class AzureDevOpsService {
   }
 
   private async fetchFromAzureDevOps(endpoint: string, method: string = 'GET', parameters?: Record<string, unknown>, retryCount: number = 0): Promise<unknown> {
+    // Create a unique request key to prevent duplicate requests
+    const requestKey = `${method}:${endpoint}:${JSON.stringify(parameters || {})}`;
+    
+    // Check if this exact request is already in progress
+    if (this.activeRequests.has(requestKey)) {
+      console.log('Duplicate request detected, skipping:', requestKey);
+      throw new Error('Duplicate request detected. Please wait for the current request to complete.');
+    }
+
     console.log('Service calling API route with:', { 
       organization: this.config.organization, 
       project: this.config.project, 
@@ -53,6 +63,9 @@ export class AzureDevOpsService {
     };
     
     console.log('Service sending request body:', JSON.stringify(requestBody, null, 2));
+    
+    // Add request to active set
+    this.activeRequests.add(requestKey);
     
     // Add a small delay to avoid rate limiting (exponential backoff for retries)
     const delay = Math.min(100 * Math.pow(2, retryCount), 2000); // Max 2 seconds
@@ -104,9 +117,15 @@ export class AzureDevOpsService {
         hasValue: !!data.value, 
         valueLength: data.value?.length || 0 
       });
+      
+      // Remove request from active set on success
+      this.activeRequests.delete(requestKey);
       return data;
       
     } catch (error) {
+      // Remove request from active set on error
+      this.activeRequests.delete(requestKey);
+      
       // Retry on network errors or 5xx server errors
       if (retryCount < 3 && (
         error instanceof TypeError || // Network error
