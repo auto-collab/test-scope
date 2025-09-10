@@ -1,4 +1,4 @@
-import { AzureDevOpsConfig } from '../types/azure-devops';
+// import { AzureDevOpsConfig } from '../types/azure-devops'; // Unused in this file
 
 // Configuration for mapping logical applications to Azure DevOps pipelines
 export interface ApplicationConfig {

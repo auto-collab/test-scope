@@ -77,10 +77,13 @@ export class AzureDevOpsService {
 
       // Handle different HTTP status codes as per Azure DevOps API docs
       if (response.status === 401) {
-        throw new Error('Unauthorized: Invalid or expired Personal Access Token');
+        console.error('401 Unauthorized: Invalid or expired Personal Access Token');
+        throw new Error('Unauthorized: Invalid or expired Personal Access Token. Please check your Azure DevOps credentials.');
       } else if (response.status === 403) {
+        console.error('403 Forbidden: Insufficient permissions for this resource');
         throw new Error('Forbidden: Insufficient permissions for this resource');
       } else if (response.status === 404) {
+        console.error('404 Not Found: The requested resource does not exist');
         throw new Error('Not Found: The requested resource does not exist');
       } else if (response.status === 429) {
         // Rate limiting - retry with exponential backoff

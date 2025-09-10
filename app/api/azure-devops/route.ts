@@ -117,15 +117,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle different response types from the Azure DevOps SDK
-    const hasValue = 'value' in result && Array.isArray((result as any).value);
-    const hasValues = 'values' in result && Array.isArray((result as any).values);
+    const resultAsRecord = result as Record<string, unknown>;
+    const hasValue = 'value' in result && Array.isArray(resultAsRecord.value);
+    const hasValues = 'values' in result && Array.isArray(resultAsRecord.values);
     const isArray = Array.isArray(result);
+    
+    const valueLength = hasValue 
+      ? (resultAsRecord.value as unknown[]).length 
+      : hasValues 
+        ? (resultAsRecord.values as unknown[]).length 
+        : isArray 
+          ? result.length 
+          : 0;
     
     console.log('Successfully fetched data using Azure DevOps SDK:', { 
       hasValue,
       hasValues,
       isArray,
-      valueLength: hasValue ? (result as any).value.length : hasValues ? (result as any).values.length : isArray ? result.length : 0,
+      valueLength,
       resultType: typeof result
     });
     

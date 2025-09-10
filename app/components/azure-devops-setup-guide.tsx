@@ -1,29 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAzureDevOps } from '../contexts/azure-devops-context';
 
 export default function AzureDevOpsSetupGuide() {
   const [showGuide, setShowGuide] = useState(false);
-  const [showConfigForm, setShowConfigForm] = useState(false);
-  const [config, setConfig] = useState({
-    organization: '',
-    project: '',
-    personalAccessToken: ''
-  });
-  const { initializeService, refreshApplications, isLoading, error } = useAzureDevOps();
-
-  const handleConfigSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!config.organization || !config.project || !config.personalAccessToken) {
-      alert('Please fill in all fields');
-      return;
-    }
-    
-    initializeService(config);
-    await refreshApplications();
-    setShowConfigForm(false);
-  };
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
@@ -34,7 +14,7 @@ export default function AzureDevOpsSetupGuide() {
           </h3>
           <p className="text-blue-800 mb-4">
             Currently running in <strong>demo mode</strong> with mock data. 
-            Follow these steps to connect to real Azure DevOps data.
+            Follow these steps to connect to real Azure DevOps data using environment variables.
           </p>
           
           <button
@@ -75,45 +55,42 @@ export default function AzureDevOpsSetupGuide() {
             </ol>
           </div>
 
-          {/* Step 2: Update API Route */}
+          {/* Step 2: Environment Configuration */}
           <div className="bg-white rounded-lg p-4 border border-blue-200">
-            <h4 className="font-semibold text-gray-900 mb-2">Step 2: Enable Real Integration</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Step 2: Configure Environment Variables</h4>
             <div className="space-y-3">
               <p className="text-sm text-gray-700">
-                Replace the mock data in <code className="bg-gray-100 px-2 py-1 rounded">app/api/azure-devops/route.ts</code> 
-                with the real integration code from <code className="bg-gray-100 px-2 py-1 rounded">real-integration-example.ts</code>
+                Create a <code className="bg-gray-100 px-2 py-1 rounded">.env.local</code> file in your project root:
               </p>
               
               <div className="bg-gray-50 p-3 rounded border">
-                <p className="text-xs text-gray-600 mb-2">Copy this code into your route.ts:</p>
-                <pre className="text-xs text-gray-800 overflow-x-auto">
-{`// Replace the mock data section with:
-const [projects, buildDefinitions, builds, testRuns] = await Promise.all([
-  getProjects(config),
-  getBuildDefinitions(config, config.project),
-  getBuilds(config, config.project),
-  getTestRuns(config, config.project)
-]);`}
+                <pre className="text-xs text-gray-800">
+{`# .env.local
+NEXT_PUBLIC_AZURE_DEVOPS_ORG=your-org-name
+NEXT_PUBLIC_AZURE_DEVOPS_PROJECT=your-project-name
+NEXT_PUBLIC_AZURE_DEVOPS_PAT=your-personal-access-token`}
                 </pre>
               </div>
             </div>
           </div>
 
-          {/* Step 3: Configuration */}
+          {/* Step 3: Update Pipeline Configuration */}
           <div className="bg-white rounded-lg p-4 border border-blue-200">
-            <h4 className="font-semibold text-gray-900 mb-2">Step 3: Configure Your Organization</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Step 3: Update Pipeline Configuration</h4>
             <div className="space-y-3">
               <p className="text-sm text-gray-700">
-                Update the context to use your real Azure DevOps configuration:
+                Update <code className="bg-gray-100 px-2 py-1 rounded">app/config/applications.ts</code> with your actual pipeline definition IDs:
               </p>
               
               <div className="bg-gray-50 p-3 rounded border">
                 <pre className="text-xs text-gray-800">
-{`const demoConfig: AzureDevOpsConfig = {
-  organization: 'your-org-name',        // e.g., 'contoso'
-  project: 'your-project-name',        // e.g., 'MyProject'
-  personalAccessToken: 'your-token'    // The token you created
-};`}
+{`// Replace placeholder IDs with your actual Azure DevOps pipeline definition IDs
+{
+  definitionId: 123, // 🔴 REPLACE: Your actual build definition ID
+  name: 'CI/CD Pipeline',
+  type: 'build',
+  // ...
+}`}
                 </pre>
               </div>
             </div>
@@ -123,10 +100,11 @@ const [projects, buildDefinitions, builds, testRuns] = await Promise.all([
           <div className="bg-white rounded-lg p-4 border border-blue-200">
             <h4 className="font-semibold text-gray-900 mb-2">Step 4: Test the Integration</h4>
             <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-              <li>Restart your development server</li>
+              <li>Restart your development server: <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">npm run dev</code></li>
               <li>Open the browser console to see any API errors</li>
               <li>Check that real project names appear in the dropdown</li>
               <li>Verify that pipeline data loads from your Azure DevOps</li>
+              <li>If you see 401 errors, double-check your Personal Access Token permissions</li>
             </ol>
           </div>
 
